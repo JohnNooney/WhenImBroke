@@ -265,9 +265,11 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
     },
     {
       color: 'var(--color-warn)',
-      name: 'Last point to switch to savings-only',
+      name: 'Target reached — switch to savings-only',
       date: result.lastSafeDate ? formatDate(result.lastSafeDate) : 'N/A',
-      badge: result.lastSafeDate ? { text: 'recommended cutoff', type: 'warn' as const } : null,
+      badge: result.lastSafeDate 
+        ? { text: `${result.targetRunwayMonths} mo runway`, type: 'warn' as const } 
+        : null,
     },
     {
       color: 'var(--color-warn)',

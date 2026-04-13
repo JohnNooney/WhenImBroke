@@ -30,6 +30,8 @@ export interface RunwayResult {
   monthlyIncome: number;
   monthlySurplus: number;
   runwayMonths: number;
+  targetRunwayMonths: number;
+  monthsToReachTarget: number | null;
   lastSafeDate: Date | null;
   depletionDate: Date | null;
   projections: MonthProjection[];
