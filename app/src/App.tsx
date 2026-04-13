@@ -15,6 +15,9 @@ const defaultData: FinancialData = {
   pocketMoney: 150,
   totalDebt: 3800,
   monthlyDebtRepayment: 0,
+  comfortableThreshold: 12,
+  cautionThreshold: 6,
+  criticalThreshold: 3,
 };
 
 function App() {

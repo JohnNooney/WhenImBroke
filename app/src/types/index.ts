@@ -16,6 +16,11 @@ export interface FinancialData {
   // Debt
   totalDebt: number;
   monthlyDebtRepayment: number;
+
+  // Phase thresholds (months of runway)
+  comfortableThreshold: number;
+  cautionThreshold: number;
+  criticalThreshold: number;
 }
 
 export interface MonthProjection {

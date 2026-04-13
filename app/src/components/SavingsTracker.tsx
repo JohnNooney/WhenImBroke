@@ -234,6 +234,40 @@ export function SavingsTracker({ data, onChange }: Props) {
         <>
           <ProjectionSection result={result} />
           <ProjectionChart result={result} />
+          <Section title="Phase thresholds">
+            <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+              Set how many months of runway define each phase
+            </p>
+            <div className="row">
+              <div className="field">
+                <label style={{ color: 'var(--color-ok)' }}>Comfortable (months)</label>
+                <input
+                  type="number"
+                  value={data.comfortableThreshold}
+                  onChange={e => onChange({ ...data, comfortableThreshold: Number(e.target.value) || 12 })}
+                  min={1}
+                />
+              </div>
+              <div className="field">
+                <label style={{ color: 'var(--color-warn)' }}>Caution (months)</label>
+                <input
+                  type="number"
+                  value={data.cautionThreshold}
+                  onChange={e => onChange({ ...data, cautionThreshold: Number(e.target.value) || 6 })}
+                  min={1}
+                />
+              </div>
+              <div className="field">
+                <label style={{ color: 'var(--color-danger)' }}>Critical (months)</label>
+                <input
+                  type="number"
+                  value={data.criticalThreshold}
+                  onChange={e => onChange({ ...data, criticalThreshold: Number(e.target.value) || 3 })}
+                  min={1}
+                />
+              </div>
+            </div>
+          </Section>
         </>
       )}
     </div>
@@ -289,10 +323,11 @@ function InfoModal({ onClose }: { onClose: () => void }) {
           
           <h3>Phase Colours</h3>
           <div className="guide-phases">
-            <div><span className="dot" style={{ background: 'var(--color-ok)' }} /> <strong>Comfortable:</strong> 12+ months of expenses in savings</div>
-            <div><span className="dot" style={{ background: 'var(--color-warn)' }} /> <strong>Caution:</strong> 6-12 months remaining</div>
-            <div><span className="dot" style={{ background: 'var(--color-danger)' }} /> <strong>Critical:</strong> Under 6 months remaining</div>
+            <div><span className="dot" style={{ background: 'var(--color-ok)' }} /> <strong>Comfortable:</strong> Above your comfortable threshold</div>
+            <div><span className="dot" style={{ background: 'var(--color-warn)' }} /> <strong>Caution:</strong> Between caution and comfortable thresholds</div>
+            <div><span className="dot" style={{ background: 'var(--color-danger)' }} /> <strong>Critical:</strong> Below caution threshold</div>
           </div>
+          <p style={{ marginTop: '0.5rem' }}>Adjust thresholds in "Phase thresholds" section below.</p>
           
           <h3>Key Calculations</h3>
           <table className="calc-table">
