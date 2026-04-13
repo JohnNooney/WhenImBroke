@@ -429,6 +429,11 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
   // Total runway after switching to consumption
   const totalConsumptionRunway = result.targetRunwayMonths;
 
+  // Duration of consumption phase (lastSafeDate → depletionDate)
+  const consumptionDuration = monthsBetween(result.lastSafeDate, result.depletionDate);
+  // Comfortable duration during consumption (fallback: all of consumption if no phase transition)
+  const consumptionComfortableDuration = comfortableDuration ?? consumptionDuration;
+
   return (
     <>
     {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
@@ -495,6 +500,9 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                 )}
               </div>
               <div className="milestone-sub">Target reached & debt-free · Peak savings: {formatCurrency(data.emergencyFundTarget)}</div>
+              {consumptionDuration !== null && (
+                <div className="milestone-sub">Consumption runway: {consumptionDuration} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
+              )}
             </div>
           </div>
         )}
@@ -508,7 +516,14 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                 {formatDate(result.depletionDate)}
                 <span className="badge danger" style={{ marginLeft: '8px' }}>{monthsFromNow(result.depletionDate)} mo away</span>
               </div>
-              <div className="milestone-sub">Total runway from today: {monthsFromNow(result.depletionDate)} months</div>
+              <div className="milestone-sub">Total runway from today: {monthsFromNow(result.depletionDate)} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
+              <div className="milestone-sub">
+                {[
+                  consumptionComfortableDuration ? `Comfortable: ${consumptionComfortableDuration} mo` : null,
+                  cautionDuration ? `Caution: ${cautionDuration} mo` : null,
+                  criticalDuration ? `Critical: ${criticalDuration} mo` : null,
+                ].filter(Boolean).join(' · ')}
+              </div>
             </div>
           </div>
         )}

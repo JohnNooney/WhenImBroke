@@ -32,6 +32,7 @@ export interface MonthProjection {
 
 export interface RunwayResult {
   monthlyExpenses: number;
+  livingExpenses: number;
   monthlyIncome: number;
   monthlySurplus: number;
   runwayMonths: number;

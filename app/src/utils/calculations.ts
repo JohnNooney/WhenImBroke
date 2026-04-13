@@ -170,6 +170,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
 
   return {
     monthlyExpenses,
+    livingExpenses,
     monthlyIncome: data.monthlyIncome,
     monthlySurplus,
     runwayMonths,
