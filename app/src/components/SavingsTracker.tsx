@@ -240,16 +240,93 @@ export function SavingsTracker({ data, onChange }: Props) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, onInfoClick }: { title: string; children: React.ReactNode; onInfoClick?: () => void }) {
   return (
     <div className="section">
-      <div className="section-title">{title}</div>
+      <div className="section-title">
+        {title}
+        {onInfoClick && (
+          <button 
+            onClick={onInfoClick}
+            className="info-btn"
+            aria-label="How this works"
+          >
+            ℹ️
+          </button>
+        )}
+      </div>
       {children}
     </div>
   );
 }
 
+function InfoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>How Survival Projection Works</h2>
+          <button onClick={onClose} className="modal-close">×</button>
+        </div>
+        <div className="modal-body">
+          <h3>Two-Phase Model</h3>
+          <p>The projection assumes two distinct phases:</p>
+          
+          <h4>Phase 1: Saving Mode</h4>
+          <ul>
+            <li>You have income covering expenses</li>
+            <li>Monthly surplus goes to savings</li>
+            <li>Debt is being paid down</li>
+            <li>Continues until target reached AND debt paid off</li>
+          </ul>
+          
+          <h4>Phase 2: Consumption Mode</h4>
+          <ul>
+            <li>No income (living off savings)</li>
+            <li>No debt payments (already cleared)</li>
+            <li>Savings decrease by monthly expenses</li>
+          </ul>
+          
+          <h3>Phase Colours</h3>
+          <div className="guide-phases">
+            <div><span className="dot" style={{ background: 'var(--color-ok)' }} /> <strong>Comfortable:</strong> 12+ months of expenses in savings</div>
+            <div><span className="dot" style={{ background: 'var(--color-warn)' }} /> <strong>Caution:</strong> 6-12 months remaining</div>
+            <div><span className="dot" style={{ background: 'var(--color-danger)' }} /> <strong>Critical:</strong> Under 6 months remaining</div>
+          </div>
+          
+          <h3>Key Calculations</h3>
+          <table className="calc-table">
+            <tbody>
+              <tr>
+                <td><strong>Monthly Surplus</strong></td>
+                <td>Income − All Expenses (inc. debt)</td>
+              </tr>
+              <tr>
+                <td><strong>Months to Target</strong></td>
+                <td>(Target − Current Savings) ÷ Surplus</td>
+              </tr>
+              <tr>
+                <td><strong>Months to Debt-Free</strong></td>
+                <td>Total Debt ÷ Monthly Repayment</td>
+              </tr>
+              <tr>
+                <td><strong>Recommended Cutoff</strong></td>
+                <td>Whichever takes longer (target or debt)</td>
+              </tr>
+              <tr>
+                <td><strong>Target Runway</strong></td>
+                <td>Target Savings ÷ Monthly Expenses</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProjectionSection({ result }: { result: RunwayResult }) {
+  const [showInfo, setShowInfo] = useState(false);
   const today = new Date();
   
   const phases = [
@@ -294,7 +371,9 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
   ];
 
   return (
-    <Section title="Survival projection">
+    <>
+    {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
+    <Section title="Survival projection" onInfoClick={() => setShowInfo(true)}>
       <div className="timeline">
         <div className="timeline-fill" style={{ width: '100%' }} />
       </div>
@@ -320,6 +399,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         </div>
       ))}
     </Section>
+    </>
   );
 }
 
