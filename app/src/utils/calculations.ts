@@ -25,18 +25,26 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   let lastSafeDate: Date | null = null;
   let depletionDate: Date | null = null;
   
-  // Calculate recommended cutoff based on target savings
+  // Calculate recommended cutoff based on target savings AND debt payoff
   // How many months to reach target from current savings
-  const monthsToReachTarget = monthlySurplus > 0 
+  const monthsToReachTarget = monthlySurplus > 0 && data.currentSavings < data.emergencyFundTarget
     ? Math.ceil((data.emergencyFundTarget - data.currentSavings) / monthlySurplus)
-    : Infinity;
+    : 0;
   
-  // Date when target will be reached
-  if (monthsToReachTarget > 0 && monthsToReachTarget < Infinity) {
+  // How many months to pay off all debt
+  const monthsToPayOffDebt = data.monthlyDebtRepayment > 0 && data.totalDebt > 0
+    ? Math.ceil(data.totalDebt / data.monthlyDebtRepayment)
+    : 0;
+  
+  // Cutoff is when BOTH conditions met: target reached AND debt paid off
+  const monthsUntilCutoff = Math.max(monthsToReachTarget, monthsToPayOffDebt);
+  
+  // Date when ready to switch to consumption mode
+  if (monthsUntilCutoff > 0) {
     lastSafeDate = new Date(today);
-    lastSafeDate.setMonth(lastSafeDate.getMonth() + monthsToReachTarget);
-  } else if (data.currentSavings >= data.emergencyFundTarget) {
-    // Already at or above target
+    lastSafeDate.setMonth(lastSafeDate.getMonth() + monthsUntilCutoff);
+  } else if (data.currentSavings >= data.emergencyFundTarget && data.totalDebt <= 0) {
+    // Already at target and debt-free
     lastSafeDate = today;
   }
   
@@ -46,17 +54,28 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     critical: { start: null as Date | null, end: null as Date | null },
   };
 
-  // Track if we've hit the target and switched to consumption mode
+  // Track if we've hit the target AND paid off debt → ready for consumption mode
   let targetReached = data.currentSavings >= data.emergencyFundTarget;
-  let consumptionStarted = targetReached;
+  let debtPaidOff = data.totalDebt <= 0;
+  let consumptionStarted = targetReached && debtPaidOff;
+  let remainingDebt = data.totalDebt;
 
   for (let month = 0; month < maxMonths; month++) {
     const date = new Date(today);
     date.setMonth(date.getMonth() + month);
     
-    // Check if we just reached target this month
+    // Check if we reached target this month
     if (!targetReached && savingsBalance >= data.emergencyFundTarget) {
       targetReached = true;
+    }
+    
+    // Check if debt paid off this month
+    if (!debtPaidOff && remainingDebt <= 0) {
+      debtPaidOff = true;
+    }
+    
+    // Start consumption only when BOTH conditions met
+    if (!consumptionStarted && targetReached && debtPaidOff) {
       consumptionStarted = true;
     }
     
@@ -106,11 +125,13 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     
     // Update balance for next month based on current mode
     if (consumptionStarted) {
-      // After target reached: consume savings (no income)
-      savingsBalance -= monthlyExpenses;
+      // After target reached AND debt paid: consume savings (no income, no debt payment)
+      const expensesWithoutDebt = monthlyExpenses - data.monthlyDebtRepayment;
+      savingsBalance -= expensesWithoutDebt;
     } else {
-      // Before target: save surplus
+      // Before ready: save surplus (includes debt repayment)
       savingsBalance += monthlySurplus;
+      remainingDebt -= data.monthlyDebtRepayment;
     }
     
     // Stop if depleted
