@@ -25,23 +25,51 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   let lastSafeDate: Date | null = null;
   let depletionDate: Date | null = null;
   
+  // Calculate recommended cutoff based on target savings
+  // How many months to reach target from current savings
+  const monthsToReachTarget = monthlySurplus > 0 
+    ? Math.ceil((data.emergencyFundTarget - data.currentSavings) / monthlySurplus)
+    : Infinity;
+  
+  // Date when target will be reached
+  if (monthsToReachTarget > 0 && monthsToReachTarget < Infinity) {
+    lastSafeDate = new Date(today);
+    lastSafeDate.setMonth(lastSafeDate.getMonth() + monthsToReachTarget);
+  } else if (data.currentSavings >= data.emergencyFundTarget) {
+    // Already at or above target
+    lastSafeDate = today;
+  }
+  
   const phases = {
     comfortable: { start: today, end: null as Date | null },
     caution: { start: null as Date | null, end: null as Date | null },
     critical: { start: null as Date | null, end: null as Date | null },
   };
 
+  // Track if we've hit the target and switched to consumption mode
+  let targetReached = data.currentSavings >= data.emergencyFundTarget;
+  let consumptionStarted = targetReached;
+
   for (let month = 0; month < maxMonths; month++) {
     const date = new Date(today);
     date.setMonth(date.getMonth() + month);
     
-    // Calculate months of runway at current balance
+    // Check if we just reached target this month
+    if (!targetReached && savingsBalance >= data.emergencyFundTarget) {
+      targetReached = true;
+      consumptionStarted = true;
+    }
+    
+    // Calculate months of runway at current balance (based on expenses)
     const monthsOfRunway = monthlyExpenses > 0 ? savingsBalance / monthlyExpenses : Infinity;
     
     let phase: MonthProjection['phase'];
     if (savingsBalance <= 0) {
       phase = 'depleted';
       if (!depletionDate) depletionDate = date;
+    } else if (!consumptionStarted) {
+      // Still in saving phase - comfortable
+      phase = 'comfortable';
     } else if (monthsOfRunway >= comfortableThreshold) {
       phase = 'comfortable';
     } else if (monthsOfRunway >= cautionThreshold) {
@@ -69,11 +97,6 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       phases.critical.end.setMonth(phases.critical.end.getMonth() - 1);
     }
     
-    // Last safe point: latest date where stopping income still gives 6+ months runway
-    if (monthlySurplus > 0 && savingsBalance >= monthlyExpenses * 6) {
-      lastSafeDate = date;
-    }
-    
     projections.push({
       month,
       date,
@@ -81,8 +104,14 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       phase,
     });
     
-    // Update balance for next month
-    savingsBalance += monthlySurplus;
+    // Update balance for next month based on current mode
+    if (consumptionStarted) {
+      // After target reached: consume savings (no income)
+      savingsBalance -= monthlyExpenses;
+    } else {
+      // Before target: save surplus
+      savingsBalance += monthlySurplus;
+    }
     
     // Stop if depleted
     if (savingsBalance <= 0 && depletionDate) break;
@@ -92,12 +121,19 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   const runwayMonths = monthlyExpenses > 0 
     ? Math.floor(data.currentSavings / monthlyExpenses)
     : Infinity;
+  
+  // How long target savings will last when spending begins
+  const targetRunwayMonths = monthlyExpenses > 0
+    ? Math.floor(data.emergencyFundTarget / monthlyExpenses)
+    : Infinity;
 
   return {
     monthlyExpenses,
     monthlyIncome: data.monthlyIncome,
     monthlySurplus,
     runwayMonths,
+    targetRunwayMonths,
+    monthsToReachTarget: monthsToReachTarget === Infinity ? null : monthsToReachTarget,
     lastSafeDate,
     depletionDate,
     projections,
