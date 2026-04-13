@@ -11,6 +11,10 @@ Most budgeting apps tell you where your money went. This tool tells you **how lo
 - **Phase timeline** — breaks your financial future into clear stages (comfortable → caution → critical)
 - **What-if scenarios** — adjust inputs and see the runway update in real time
 
+## Live Demo
+
+**[https://johnnooney.github.io/WhenImBroke/](https://johnnooney.github.io/WhenImBroke/)**
+
 ## Getting Started
 
 ```bash
