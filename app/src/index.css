@@ -402,3 +402,147 @@
 .calc-table td:first-child {
   width: 40%;
 }
+
+/* Milestone Section */
+.milestone-section {
+  margin-bottom: 1.5rem;
+}
+
+.milestone-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+
+.milestone-item {
+  display: flex;
+  gap: 12px;
+  padding: 0.75rem 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+
+.milestone-item:last-child {
+  border-bottom: none;
+}
+
+.milestone-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.milestone-content {
+  flex: 1;
+}
+
+.milestone-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.milestone-detail {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.milestone-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Phase Section */
+.phase-section {
+  margin-bottom: 1.5rem;
+}
+
+.phase-block {
+  padding: 0.75rem;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.phase-block:last-child {
+  margin-bottom: 0;
+}
+
+.phase-block-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.phase-block-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.phase-block-duration {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-background-primary);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-md);
+}
+
+.phase-block-details {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding-left: 18px;
+}
+
+.phase-block-sub {
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Projection Summary */
+.projection-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 1rem;
+  border-top: 0.5px solid var(--color-border-tertiary);
+}
+
+@media (max-width: 480px) {
+  .projection-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary-stat {
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+}
+
+.summary-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}

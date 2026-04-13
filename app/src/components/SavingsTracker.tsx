@@ -364,75 +364,180 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
   const [showInfo, setShowInfo] = useState(false);
   const today = new Date();
   
-  const phases = [
-    {
-      color: 'var(--color-ok)',
-      name: 'Comfortable — income covers all expenses',
-      date: result.phases.comfortable.end 
-        ? `Now → ${formatDate(result.phases.comfortable.end)}`
-        : 'Ongoing',
-      badge: result.phases.comfortable.end 
-        ? { text: `${Math.ceil((result.phases.comfortable.end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30))} mo`, type: 'ok' as const }
-        : null,
-    },
-    {
-      color: 'var(--color-warn)',
-      name: 'Target reached — switch to savings-only',
-      date: result.lastSafeDate ? formatDate(result.lastSafeDate) : 'N/A',
-      badge: result.lastSafeDate 
-        ? { text: `${result.targetRunwayMonths} mo runway`, type: 'warn' as const } 
-        : null,
-    },
-    {
-      color: 'var(--color-warn)',
-      name: 'Drawing from savings — covering gap',
-      date: result.phases.caution.start && result.phases.caution.end
-        ? `${formatDate(result.phases.caution.start)} → ${formatDate(result.phases.caution.end)}`
-        : result.phases.caution.start
-        ? `From ${formatDate(result.phases.caution.start)}`
-        : 'N/A',
-      badge: result.phases.caution.start && result.phases.caution.end
-        ? { text: `${Math.ceil((result.phases.caution.end.getTime() - result.phases.caution.start.getTime()) / (1000 * 60 * 60 * 24 * 30))} mo`, type: 'warn' as const }
-        : null,
-    },
-    {
-      color: 'var(--color-danger)',
-      name: 'Savings depleted — critical threshold',
-      date: result.depletionDate ? formatDate(result.depletionDate) : 'Never',
-      badge: result.depletionDate 
-        ? { text: `${result.runwayMonths} mo runway`, type: 'danger' as const }
-        : { text: 'sustainable', type: 'ok' as const },
-    },
-  ];
+  // Calculate durations
+  const monthsBetween = (start: Date | null, end: Date | null) => {
+    if (!start || !end) return null;
+    return Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30)));
+  };
+  
+  const monthsFromNow = (date: Date | null) => {
+    if (!date) return null;
+    return Math.max(0, Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30)));
+  };
+
+  // Phase durations
+  const savingPhaseDuration = monthsFromNow(result.lastSafeDate);
+  const comfortableDuration = result.phases.comfortable.end 
+    ? monthsBetween(result.lastSafeDate, result.phases.comfortable.end)
+    : null;
+  const cautionDuration = monthsBetween(result.phases.caution.start, result.phases.caution.end);
+  const criticalDuration = monthsBetween(result.phases.critical.start, result.depletionDate);
+  
+  // Total runway after switching to consumption
+  const totalConsumptionRunway = result.targetRunwayMonths;
 
   return (
     <>
     {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
     <Section title="Survival projection" onInfoClick={() => setShowInfo(true)}>
-      <div className="timeline">
-        <div className="timeline-fill" style={{ width: '100%' }} />
-      </div>
-      <div className="tl-labels">
-        <span>Today · {formatDate(today)}</span>
-        <span style={{ color: 'var(--color-ok)' }}>Safe zone</span>
-        <span style={{ color: 'var(--color-warn)' }}>Caution</span>
-        <span style={{ color: 'var(--color-danger)' }}>
-          Critical · {result.depletionDate ? formatDate(result.depletionDate) : '∞'}
-        </span>
-      </div>
-
-      {phases.map((phase, i) => (
-        <div key={i} className="phase-row">
-          <div className="dot" style={{ background: phase.color }} />
-          <div className="phase-name">{phase.name}</div>
-          <div className="phase-date">
-            <strong>{phase.date}</strong>
-            {phase.badge && (
-              <span className={`badge ${phase.badge.type}`}>{phase.badge.text}</span>
-            )}
+      
+      {/* Key Milestones */}
+      <div className="milestone-section">
+        <div className="milestone-header">Key Milestones</div>
+        
+        <div className="milestone-item">
+          <div className="milestone-icon">📍</div>
+          <div className="milestone-content">
+            <div className="milestone-title">Today</div>
+            <div className="milestone-detail">{formatDate(today)} · Current savings: {formatCurrency(result.projections[0]?.savingsBalance || 0)}</div>
           </div>
         </div>
-      ))}
+        
+        {result.lastSafeDate && (
+          <div className="milestone-item">
+            <div className="milestone-icon">🎯</div>
+            <div className="milestone-content">
+              <div className="milestone-title">Target Reached & Debt-Free</div>
+              <div className="milestone-detail">
+                {formatDate(result.lastSafeDate)}
+                {savingPhaseDuration !== null && savingPhaseDuration > 0 && (
+                  <span className="badge ok" style={{ marginLeft: '8px' }}>{savingPhaseDuration} mo away</span>
+                )}
+              </div>
+              <div className="milestone-sub">Ready to switch to savings-only mode</div>
+            </div>
+          </div>
+        )}
+        
+        {result.depletionDate && (
+          <div className="milestone-item">
+            <div className="milestone-icon">⚠️</div>
+            <div className="milestone-content">
+              <div className="milestone-title">Savings Depleted</div>
+              <div className="milestone-detail">
+                {formatDate(result.depletionDate)}
+                <span className="badge danger" style={{ marginLeft: '8px' }}>{monthsFromNow(result.depletionDate)} mo away</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {!result.depletionDate && (
+          <div className="milestone-item">
+            <div className="milestone-icon">✅</div>
+            <div className="milestone-content">
+              <div className="milestone-title">Sustainable</div>
+              <div className="milestone-detail">Savings will not deplete within 20 years</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Phase Breakdown */}
+      <div className="phase-section">
+        <div className="milestone-header">Phase Breakdown</div>
+        
+        {/* Saving Phase */}
+        <div className="phase-block">
+          <div className="phase-block-header">
+            <span className="dot" style={{ background: 'var(--color-ok)' }} />
+            <span className="phase-block-title">Phase 1: Saving</span>
+            {savingPhaseDuration !== null && savingPhaseDuration > 0 && (
+              <span className="phase-block-duration">{savingPhaseDuration} months</span>
+            )}
+          </div>
+          <div className="phase-block-details">
+            <div>Now → {result.lastSafeDate ? formatDate(result.lastSafeDate) : 'Ongoing'}</div>
+            <div className="phase-block-sub">
+              Income covers expenses · Surplus: {formatCurrency(result.monthlySurplus)}/mo
+            </div>
+          </div>
+        </div>
+
+        {/* Consumption Phases */}
+        {result.lastSafeDate && (
+          <>
+            <div className="phase-block">
+              <div className="phase-block-header">
+                <span className="dot" style={{ background: 'var(--color-ok)' }} />
+                <span className="phase-block-title">Phase 2: Comfortable</span>
+                {comfortableDuration !== null && (
+                  <span className="phase-block-duration">{comfortableDuration} months</span>
+                )}
+              </div>
+              <div className="phase-block-details">
+                <div>
+                  {formatDate(result.lastSafeDate)} → {result.phases.comfortable.end ? formatDate(result.phases.comfortable.end) : 'Ongoing'}
+                </div>
+                <div className="phase-block-sub">Living off savings · 12+ months runway</div>
+              </div>
+            </div>
+
+            {result.phases.caution.start && (
+              <div className="phase-block">
+                <div className="phase-block-header">
+                  <span className="dot" style={{ background: 'var(--color-warn)' }} />
+                  <span className="phase-block-title">Phase 3: Caution</span>
+                  {cautionDuration !== null && (
+                    <span className="phase-block-duration">{cautionDuration} months</span>
+                  )}
+                </div>
+                <div className="phase-block-details">
+                  <div>
+                    {formatDate(result.phases.caution.start)} → {result.phases.caution.end ? formatDate(result.phases.caution.end) : 'Ongoing'}
+                  </div>
+                  <div className="phase-block-sub">6-12 months runway remaining</div>
+                </div>
+              </div>
+            )}
+
+            {result.phases.critical.start && (
+              <div className="phase-block">
+                <div className="phase-block-header">
+                  <span className="dot" style={{ background: 'var(--color-danger)' }} />
+                  <span className="phase-block-title">Phase 4: Critical</span>
+                  {criticalDuration !== null && (
+                    <span className="phase-block-duration">{criticalDuration} months</span>
+                  )}
+                </div>
+                <div className="phase-block-details">
+                  <div>
+                    {formatDate(result.phases.critical.start)} → {result.depletionDate ? formatDate(result.depletionDate) : 'Ongoing'}
+                  </div>
+                  <div className="phase-block-sub">Under 6 months runway · Action needed</div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Summary Stats */}
+      <div className="projection-summary">
+        <div className="summary-stat">
+          <div className="summary-label">Total runway from target</div>
+          <div className="summary-value">{totalConsumptionRunway} months</div>
+        </div>
+        <div className="summary-stat">
+          <div className="summary-label">Monthly burn rate</div>
+          <div className="summary-value">{formatCurrency(result.monthlyExpenses - (result.monthlySurplus > 0 ? 0 : Math.abs(result.monthlySurplus)))}</div>
+        </div>
+        <div className="summary-stat">
+          <div className="summary-label">Current runway</div>
+          <div className="summary-value">{result.runwayMonths} months</div>
+        </div>
+      </div>
+
     </Section>
     </>
   );
