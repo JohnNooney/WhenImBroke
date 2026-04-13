@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import type { FinancialData } from '../types';
-import { parseCSV, aggregateTransactions } from '../utils/csvParser';
+import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
 import { Upload, PoundSterling, Home, Zap, ShoppingCart, CreditCard, Car, Wallet, Landmark, FileText } from 'lucide-react';
 
 interface Props {
@@ -8,12 +8,47 @@ interface Props {
   onChange: (data: FinancialData) => void;
 }
 
+interface InputFieldProps {
+  label: string;
+  field: keyof FinancialData;
+  icon: typeof PoundSterling;
+  value: number;
+  onFieldChange: (field: keyof FinancialData, value: string) => void;
+}
+
+const InputField = memo(function InputField({
+  label,
+  field,
+  icon: Icon,
+  value,
+  onFieldChange,
+}: InputFieldProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
+        <Icon className="w-4 h-4" />
+        {label}
+      </label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">£</span>
+        <input
+          type="number"
+          value={value || ''}
+          onChange={(e) => onFieldChange(field, e.target.value)}
+          className="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+          placeholder="0"
+        />
+      </div>
+    </div>
+  );
+});
+
 export function InputForm({ data, onChange }: Props) {
   const [activeTab, setActiveTab] = useState<'manual' | 'import'>('manual');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (field: keyof FinancialData, value: string) => {
-    const numValue = parseFloat(value) || 0;
+    const numValue = value === '' ? 0 : parseFloat(value) || 0;
     onChange({ ...data, [field]: numValue });
   };
 
@@ -22,8 +57,16 @@ export function InputForm({ data, onChange }: Props) {
     if (!file) return;
 
     const content = await file.text();
-    const transactions = parseCSV(content);
-    const aggregated = aggregateTransactions(transactions);
+    const lines = content.trim().split('\n');
+    const headers = lines[0]?.split(',').map(h => h.trim().replace(/"/g, '')) || [];
+    const format = detectBankFormat(headers);
+    
+    const transactions = format === 'snoop' 
+      ? parseSnoopCSV(content) 
+      : parseCSV(content);
+    
+    const recentTransactions = filterLast30Days(transactions);
+    const aggregated = aggregateTransactions(recentTransactions);
 
     onChange({
       ...data,
@@ -37,32 +80,6 @@ export function InputForm({ data, onChange }: Props) {
     });
   };
 
-  const InputField = ({
-    label,
-    field,
-    icon: Icon,
-  }: {
-    label: string;
-    field: keyof FinancialData;
-    icon: typeof PoundSterling;
-  }) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
-        <Icon className="w-4 h-4" />
-        {label}
-      </label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">£</span>
-        <input
-          type="number"
-          value={data[field] || ''}
-          onChange={(e) => handleChange(field, e.target.value)}
-          className="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-          placeholder="0"
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
@@ -105,7 +122,7 @@ export function InputForm({ data, onChange }: Props) {
             Drop your bank CSV here or click to upload
           </p>
           <p className="text-sm text-slate-500 mb-4">
-            Supports Monzo, Starling, Lloyds, HSBC
+            Supports Monzo, Starling, Lloyds, HSBC, Snoop
           </p>
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -123,10 +140,10 @@ export function InputForm({ data, onChange }: Props) {
             Savings & Income
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Current Savings" field="currentSavings" icon={PoundSterling} />
-            <InputField label="Monthly Income" field="monthlyIncome" icon={PoundSterling} />
-            <InputField label="Monthly Savings" field="monthlySavingsContribution" icon={PoundSterling} />
-            <InputField label="Emergency Fund Target" field="emergencyFundTarget" icon={PoundSterling} />
+            <InputField label="Current Savings" field="currentSavings" icon={PoundSterling} value={data.currentSavings} onFieldChange={handleChange} />
+            <InputField label="Monthly Income" field="monthlyIncome" icon={PoundSterling} value={data.monthlyIncome} onFieldChange={handleChange} />
+            <InputField label="Monthly Savings" field="monthlySavingsContribution" icon={PoundSterling} value={data.monthlySavingsContribution} onFieldChange={handleChange} />
+            <InputField label="Emergency Fund Target" field="emergencyFundTarget" icon={PoundSterling} value={data.emergencyFundTarget} onFieldChange={handleChange} />
           </div>
         </div>
 
@@ -136,12 +153,12 @@ export function InputForm({ data, onChange }: Props) {
             Monthly Expenses
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Rent / Mortgage" field="rent" icon={Home} />
-            <InputField label="Utilities & Bills" field="utilities" icon={Zap} />
-            <InputField label="Groceries" field="groceries" icon={ShoppingCart} />
-            <InputField label="Subscriptions" field="subscriptions" icon={CreditCard} />
-            <InputField label="Transport" field="transport" icon={Car} />
-            <InputField label="Pocket Money" field="pocketMoney" icon={Wallet} />
+            <InputField label="Rent / Mortgage" field="rent" icon={Home} value={data.rent} onFieldChange={handleChange} />
+            <InputField label="Utilities & Bills" field="utilities" icon={Zap} value={data.utilities} onFieldChange={handleChange} />
+            <InputField label="Groceries" field="groceries" icon={ShoppingCart} value={data.groceries} onFieldChange={handleChange} />
+            <InputField label="Subscriptions" field="subscriptions" icon={CreditCard} value={data.subscriptions} onFieldChange={handleChange} />
+            <InputField label="Transport" field="transport" icon={Car} value={data.transport} onFieldChange={handleChange} />
+            <InputField label="Pocket Money" field="pocketMoney" icon={Wallet} value={data.pocketMoney} onFieldChange={handleChange} />
           </div>
         </div>
 
@@ -151,8 +168,8 @@ export function InputForm({ data, onChange }: Props) {
             Debt
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <InputField label="Total Outstanding Debt" field="totalDebt" icon={CreditCard} />
-            <InputField label="Monthly Debt Repayment" field="monthlyDebtRepayment" icon={PoundSterling} />
+            <InputField label="Total Outstanding Debt" field="totalDebt" icon={CreditCard} value={data.totalDebt} onFieldChange={handleChange} />
+            <InputField label="Monthly Debt Repayment" field="monthlyDebtRepayment" icon={PoundSterling} value={data.monthlyDebtRepayment} onFieldChange={handleChange} />
           </div>
         </div>
       </div>

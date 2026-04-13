@@ -215,7 +215,7 @@ function ProjectionChart({ projections }: { projections: RunwayResult['projectio
   };
 
   return (
-    <div className="h-48 flex items-end gap-1">
+    <div className="h-48 flex items-end gap-0.5 overflow-x-auto">
       {displayProjections.map((p, i) => {
         // Scale relative to range, with minimum 10% base height for visibility
         const normalizedHeight = range > 0 
@@ -224,10 +224,10 @@ function ProjectionChart({ projections }: { projections: RunwayResult['projectio
         return (
           <div
             key={i}
-            className="flex-1 flex flex-col justify-end group relative"
+            className="flex-1 min-w-[8px] flex flex-col justify-end group relative"
           >
             <div
-              className={`${phaseColors[p.phase]} rounded-t transition-all hover:opacity-80`}
+              className={`w-full ${phaseColors[p.phase]} rounded-t transition-all hover:opacity-80`}
               style={{ height: `${normalizedHeight}%` }}
             />
             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">

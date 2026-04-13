@@ -233,6 +233,16 @@ function mapSnoopCategory(snoopCategory: string, amount: number): string {
   return 'pocketMoney';
 }
 
+export function filterLast30Days(transactions: Transaction[]): Transaction[] {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  
+  return transactions.filter(t => {
+    const date = new Date(t.date);
+    return date >= thirtyDaysAgo && date <= now;
+  });
+}
+
 export function aggregateTransactions(transactions: Transaction[]): {
   rent: number;
   utilities: number;
