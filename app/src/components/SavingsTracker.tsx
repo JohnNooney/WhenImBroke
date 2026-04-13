@@ -175,7 +175,7 @@ export function SavingsTracker({ data, onChange }: Props) {
             </div>
           </Section>
 
-          <ProjectionSection result={result} />
+          <ProjectionSection result={result} data={data} />
           <ScenariosSection data={data} onChange={onChange} />
         </>
       )}
@@ -233,7 +233,7 @@ export function SavingsTracker({ data, onChange }: Props) {
       {/* Projection Tab */}
       {activeTab === 'projection' && (
         <>
-          <ProjectionSection result={result} />
+          <ProjectionSection result={result} data={data} />
           <ProjectionChart result={result} />
           <Section title="Phase thresholds">
             <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
@@ -361,7 +361,7 @@ function InfoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ProjectionSection({ result }: { result: RunwayResult }) {
+function ProjectionSection({ result, data }: { result: RunwayResult; data: FinancialData }) {
   const [showInfo, setShowInfo] = useState(false);
   const today = new Date();
   
@@ -451,8 +451,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         {/* Saving Phase */}
         <div className="phase-block">
           <div className="phase-block-header">
-            <span className="dot" style={{ background: 'var(--color-ok)' }} />
-            <span className="phase-block-title">Phase 1: Saving</span>
+            <span className="phase-block-title">Phase 1: Saving Mode</span>
             {savingPhaseDuration !== null && savingPhaseDuration > 0 && (
               <span className="phase-block-duration">{savingPhaseDuration} months</span>
             )}
@@ -460,7 +459,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
           <div className="phase-block-details">
             <div>Now → {result.lastSafeDate ? formatDate(result.lastSafeDate) : 'Ongoing'}</div>
             <div className="phase-block-sub">
-              Income covers expenses · Surplus: {formatCurrency(result.monthlySurplus)}/mo
+              Income covers expenses · Surplus: {formatCurrency(result.monthlySurplus)}/mo · Debt being paid down
             </div>
           </div>
         </div>
@@ -468,10 +467,19 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         {/* Consumption Phases */}
         {result.lastSafeDate && (
           <>
-            <div className="phase-block">
+            <div className="phase-block consumption-header">
+              <div className="phase-block-header">
+                <span className="phase-block-title">Phase 2: Consumption Mode</span>
+              </div>
+              <div className="phase-block-details">
+                <div className="phase-block-sub">No income · Living off savings · No debt payments</div>
+              </div>
+            </div>
+
+            <div className="phase-block sub-phase">
               <div className="phase-block-header">
                 <span className="dot" style={{ background: 'var(--color-ok)' }} />
-                <span className="phase-block-title">Phase 2: Comfortable</span>
+                <span className="phase-block-title">Comfortable</span>
                 {comfortableDuration !== null && (
                   <span className="phase-block-duration">{comfortableDuration} months</span>
                 )}
@@ -480,15 +488,15 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
                 <div>
                   {formatDate(result.lastSafeDate)} → {result.phases.comfortable.end ? formatDate(result.phases.comfortable.end) : 'Ongoing'}
                 </div>
-                <div className="phase-block-sub">Living off savings · 12+ months runway</div>
+                <div className="phase-block-sub">{data.comfortableThreshold}+ months runway</div>
               </div>
             </div>
 
             {result.phases.caution.start && (
-              <div className="phase-block">
+              <div className="phase-block sub-phase">
                 <div className="phase-block-header">
                   <span className="dot" style={{ background: 'var(--color-warn)' }} />
-                  <span className="phase-block-title">Phase 3: Caution</span>
+                  <span className="phase-block-title">Caution</span>
                   {cautionDuration !== null && (
                     <span className="phase-block-duration">{cautionDuration} months</span>
                   )}
@@ -497,16 +505,16 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
                   <div>
                     {formatDate(result.phases.caution.start)} → {result.phases.caution.end ? formatDate(result.phases.caution.end) : 'Ongoing'}
                   </div>
-                  <div className="phase-block-sub">6-12 months runway remaining</div>
+                  <div className="phase-block-sub">{data.cautionThreshold}-{data.comfortableThreshold} months runway</div>
                 </div>
               </div>
             )}
 
             {result.phases.critical.start && (
-              <div className="phase-block">
+              <div className="phase-block sub-phase">
                 <div className="phase-block-header">
                   <span className="dot" style={{ background: 'var(--color-danger)' }} />
-                  <span className="phase-block-title">Phase 4: Critical</span>
+                  <span className="phase-block-title">Critical</span>
                   {criticalDuration !== null && (
                     <span className="phase-block-duration">{criticalDuration} months</span>
                   )}
@@ -515,7 +523,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
                   <div>
                     {formatDate(result.phases.critical.start)} → {result.depletionDate ? formatDate(result.depletionDate) : 'Ongoing'}
                   </div>
-                  <div className="phase-block-sub">Under 6 months runway · Action needed</div>
+                  <div className="phase-block-sub">Under {data.cautionThreshold} months runway · Action needed</div>
                 </div>
               </div>
             )}

@@ -470,7 +470,7 @@
 
 .phase-block {
   padding: 0.75rem;
-  background: var(--color-background-secondary);
+  background: var(--color-background-secondary) !important;
   border-radius: var(--border-radius-md);
   margin-bottom: 0.5rem;
 }
@@ -484,6 +484,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+  background: transparent;
 }
 
 .phase-block-title {
@@ -491,6 +492,8 @@
   font-weight: 500;
   color: var(--color-text-primary);
   flex: 1;
+  background: none !important;
+  background-color: transparent !important;
 }
 
 .phase-block-duration {
@@ -511,6 +514,20 @@
 .phase-block-sub {
   opacity: 0.8;
   margin-top: 2px;
+}
+
+.phase-block.consumption-header {
+  margin-top: 0.5rem;
+}
+
+.phase-block.consumption-header .phase-block-details {
+  padding-left: 0;
+}
+
+.phase-block.sub-phase {
+  margin-left: 1rem;
+  border-left: 2px solid var(--color-border-tertiary);
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
 }
 
 /* Projection Summary */
