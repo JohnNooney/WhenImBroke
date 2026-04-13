@@ -37,6 +37,9 @@ export interface RunwayResult {
   runwayMonths: number;
   targetRunwayMonths: number;
   monthsToReachTarget: number | null;
+  monthsToPayOffDebt: number | null;
+  targetReachedDate: Date | null;
+  debtFreeDate: Date | null;
   lastSafeDate: Date | null;
   depletionDate: Date | null;
   projections: MonthProjection[];

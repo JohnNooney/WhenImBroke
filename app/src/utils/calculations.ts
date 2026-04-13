@@ -21,7 +21,6 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   const maxMonths = 240; // 20 years max projection
   
   // Phase thresholds (months of expenses) - from user config
-  const comfortableThreshold = data.comfortableThreshold;
   const cautionThreshold = data.cautionThreshold;
   const criticalThreshold = data.criticalThreshold;
   
@@ -42,7 +41,25 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   // Cutoff is when BOTH conditions met: target reached AND debt paid off
   const monthsUntilCutoff = Math.max(monthsToReachTarget, monthsToPayOffDebt);
   
-  // Date when ready to switch to consumption mode
+  // Calculate individual milestone dates
+  let targetReachedDate: Date | null = null;
+  let debtFreeDate: Date | null = null;
+  
+  if (data.currentSavings >= data.emergencyFundTarget) {
+    targetReachedDate = today; // Already at target
+  } else if (monthsToReachTarget > 0) {
+    targetReachedDate = new Date(today);
+    targetReachedDate.setMonth(targetReachedDate.getMonth() + monthsToReachTarget);
+  }
+  
+  if (data.totalDebt <= 0) {
+    debtFreeDate = today; // Already debt-free
+  } else if (monthsToPayOffDebt > 0) {
+    debtFreeDate = new Date(today);
+    debtFreeDate.setMonth(debtFreeDate.getMonth() + monthsToPayOffDebt);
+  }
+  
+  // Date when ready to switch to consumption mode (both conditions met)
   if (monthsUntilCutoff > 0) {
     lastSafeDate = new Date(today);
     lastSafeDate.setMonth(lastSafeDate.getMonth() + monthsUntilCutoff);
@@ -94,15 +111,13 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     } else if (!consumptionStarted) {
       // Still in saving phase - comfortable
       phase = 'comfortable';
-    } else if (monthsOfRunway >= comfortableThreshold) {
+    } else if (monthsOfRunway > cautionThreshold) {
       phase = 'comfortable';
-    } else if (monthsOfRunway >= cautionThreshold) {
+    } else if (monthsOfRunway > criticalThreshold) {
       phase = 'caution';
       if (!phases.caution.start) phases.caution.start = date;
-    } else if (monthsOfRunway >= criticalThreshold) {
-      phase = 'critical';
-      if (!phases.critical.start) phases.critical.start = date;
     } else {
+      // Below caution threshold = critical
       phase = 'critical';
       if (!phases.critical.start) phases.critical.start = date;
     }
@@ -160,6 +175,9 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     runwayMonths,
     targetRunwayMonths,
     monthsToReachTarget: monthsToReachTarget === Infinity ? null : monthsToReachTarget,
+    monthsToPayOffDebt: monthsToPayOffDebt === 0 ? null : monthsToPayOffDebt,
+    targetReachedDate,
+    debtFreeDate,
     lastSafeDate,
     depletionDate,
     projections,

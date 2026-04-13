@@ -1,5 +1,5 @@
 import { useState, useRef, memo, useMemo } from 'react';
-import { MapPin, Target, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { MapPin, Target, AlertTriangle, CheckCircle, Info, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import type { FinancialData, RunwayResult } from '../types';
 import { calculateRunway, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
@@ -400,22 +400,59 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
           <div className="milestone-icon"><MapPin size={18} /></div>
           <div className="milestone-content">
             <div className="milestone-title">Today</div>
-            <div className="milestone-detail">{formatDate(today)} · Current savings: {formatCurrency(result.projections[0]?.savingsBalance || 0)}</div>
+            <div className="milestone-detail">
+              {formatDate(today)} · Savings: {formatCurrency(data.currentSavings)} · Runway: {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
+            </div>
           </div>
         </div>
-        
+
+        {/* Debt-Free Milestone */}
+        {data.totalDebt > 0 && result.debtFreeDate && (
+          <div className="milestone-item">
+            <div className="milestone-icon"><Wallet size={18} /></div>
+            <div className="milestone-content">
+              <div className="milestone-title">Debt-Free</div>
+              <div className="milestone-detail">
+                {formatDate(result.debtFreeDate)}
+                {result.monthsToPayOffDebt && result.monthsToPayOffDebt > 0 && (
+                  <span className="badge" style={{ marginLeft: '8px' }}>{result.monthsToPayOffDebt} mo away</span>
+                )}
+              </div>
+              <div className="milestone-sub">Total debt: {formatCurrency(data.totalDebt)} at {formatCurrency(data.monthlyDebtRepayment)}/mo</div>
+            </div>
+          </div>
+        )}
+
+        {/* Target Savings Milestone */}
+        {result.targetReachedDate && data.currentSavings < data.emergencyFundTarget && (
+          <div className="milestone-item">
+            <div className="milestone-icon"><PiggyBank size={18} /></div>
+            <div className="milestone-content">
+              <div className="milestone-title">Target Savings Reached</div>
+              <div className="milestone-detail">
+                {formatDate(result.targetReachedDate)}
+                {result.monthsToReachTarget && result.monthsToReachTarget > 0 && (
+                  <span className="badge" style={{ marginLeft: '8px' }}>{result.monthsToReachTarget} mo away</span>
+                )}
+              </div>
+              <div className="milestone-sub">Target: {formatCurrency(data.emergencyFundTarget)} · Need: {formatCurrency(data.emergencyFundTarget - data.currentSavings)}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Ready for Consumption Mode */}
         {result.lastSafeDate && (
           <div className="milestone-item">
-            <div className="milestone-icon"><Target size={18} /></div>
+            <div className="milestone-icon"><Target size={18} color="var(--color-ok)" /></div>
             <div className="milestone-content">
-              <div className="milestone-title">Target Reached & Debt-Free</div>
+              <div className="milestone-title">Ready for Consumption Mode</div>
               <div className="milestone-detail">
                 {formatDate(result.lastSafeDate)}
                 {savingPhaseDuration !== null && savingPhaseDuration > 0 && (
                   <span className="badge ok" style={{ marginLeft: '8px' }}>{savingPhaseDuration} mo away</span>
                 )}
               </div>
-              <div className="milestone-sub">Ready to switch to savings-only mode</div>
+              <div className="milestone-sub">Target reached & debt-free · Peak savings: {formatCurrency(data.emergencyFundTarget)}</div>
             </div>
           </div>
         )}
@@ -429,13 +466,14 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                 {formatDate(result.depletionDate)}
                 <span className="badge danger" style={{ marginLeft: '8px' }}>{monthsFromNow(result.depletionDate)} mo away</span>
               </div>
+              <div className="milestone-sub">Total runway from today: {monthsFromNow(result.depletionDate)} months</div>
             </div>
           </div>
         )}
         
         {!result.depletionDate && (
           <div className="milestone-item">
-            <div className="milestone-icon"><CheckCircle size={18} color="var(--color-ok)" /></div>
+            <div className="milestone-icon"><TrendingUp size={18} color="var(--color-ok)" /></div>
             <div className="milestone-content">
               <div className="milestone-title">Sustainable</div>
               <div className="milestone-detail">Savings will not deplete within 20 years</div>
