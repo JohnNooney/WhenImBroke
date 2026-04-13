@@ -44,6 +44,15 @@ const InputField = memo(function InputField({ label, value, onChange }: InputFie
   );
 });
 
+function Tooltip({ text }: { text: string }) {
+  return (
+    <span className="tooltip-wrap">
+      <Info size={11} aria-hidden="true" />
+      <span className="tooltip-box" role="tooltip">{text}</span>
+    </span>
+  );
+}
+
 export function SavingsTracker({ data, onChange }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [importError, setImportError] = useState<string | null>(null);
@@ -142,25 +151,25 @@ export function SavingsTracker({ data, onChange }: Props) {
       {/* Metrics Grid */}
       <div className="metric-grid">
         <div className="metric">
-          <div className="label">Current savings</div>
+          <div className="label">Current savings <Tooltip text="Your current savings balance. Baseline for all runway and depletion projections." /></div>
           <div className="value" style={{ color: getValueColor('ok') }}>
             {formatCurrency(data.currentSavings)}
           </div>
         </div>
         <div className="metric">
-          <div className="label">Monthly surplus</div>
+          <div className="label">Monthly surplus <Tooltip text="Income minus all expenses including debt repayments. Positive means you're accumulating savings each month." /></div>
           <div className="value" style={{ color: getValueColor(getSurplusColor()) }}>
             {result.monthlySurplus >= 0 ? '+' : ''}{formatCurrency(result.monthlySurplus)}
           </div>
         </div>
         <div className="metric">
-          <div className="label">Total debt</div>
+          <div className="label">Total debt <Tooltip text="Outstanding debt balance. Repayments are included in saving-phase costs only — cleared before consumption mode begins." /></div>
           <div className="value" style={{ color: data.totalDebt > 0 ? getValueColor('danger') : getValueColor('neutral') }}>
             {formatCurrency(data.totalDebt)}
           </div>
         </div>
         <div className="metric">
-          <div className="label">Runway</div>
+          <div className="label">Runway <Tooltip text="Months your current savings would last if income stopped today, spending only on living expenses (debt repayments end with the debt)." /></div>
           <div className="value">
             {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
           </div>

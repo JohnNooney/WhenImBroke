@@ -403,6 +403,56 @@
   width: 40%;
 }
 
+/* Tooltip */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 3px;
+  cursor: default;
+  opacity: 0.5;
+  vertical-align: middle;
+  transition: opacity 0.15s;
+}
+
+.tooltip-wrap:hover {
+  opacity: 1;
+}
+
+.tooltip-box {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text-primary);
+  color: var(--color-background-primary);
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 6px 9px;
+  border-radius: var(--border-radius-md);
+  width: 190px;
+  white-space: normal;
+  text-align: left;
+  z-index: 200;
+  pointer-events: none;
+  font-weight: 400;
+}
+
+.tooltip-box::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-text-primary);
+}
+
+.tooltip-wrap:hover .tooltip-box {
+  display: block;
+}
+
 /* Milestone Section */
 .milestone-section {
   margin-bottom: 1.5rem;
