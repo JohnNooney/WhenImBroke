@@ -1,4 +1,5 @@
 import { useState, useRef, memo, useMemo } from 'react';
+import { MapPin, Target, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import type { FinancialData, RunwayResult } from '../types';
 import { calculateRunway, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
@@ -285,7 +286,7 @@ function Section({ title, children, onInfoClick }: { title: string; children: Re
             className="info-btn"
             aria-label="How this works"
           >
-            ℹ️
+            <Info size={14} />
           </button>
         )}
       </div>
@@ -396,7 +397,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         <div className="milestone-header">Key Milestones</div>
         
         <div className="milestone-item">
-          <div className="milestone-icon">📍</div>
+          <div className="milestone-icon"><MapPin size={18} /></div>
           <div className="milestone-content">
             <div className="milestone-title">Today</div>
             <div className="milestone-detail">{formatDate(today)} · Current savings: {formatCurrency(result.projections[0]?.savingsBalance || 0)}</div>
@@ -405,7 +406,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         
         {result.lastSafeDate && (
           <div className="milestone-item">
-            <div className="milestone-icon">🎯</div>
+            <div className="milestone-icon"><Target size={18} /></div>
             <div className="milestone-content">
               <div className="milestone-title">Target Reached & Debt-Free</div>
               <div className="milestone-detail">
@@ -421,7 +422,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         
         {result.depletionDate && (
           <div className="milestone-item">
-            <div className="milestone-icon">⚠️</div>
+            <div className="milestone-icon"><AlertTriangle size={18} color="var(--color-danger)" /></div>
             <div className="milestone-content">
               <div className="milestone-title">Savings Depleted</div>
               <div className="milestone-detail">
@@ -434,7 +435,7 @@ function ProjectionSection({ result }: { result: RunwayResult }) {
         
         {!result.depletionDate && (
           <div className="milestone-item">
-            <div className="milestone-icon">✅</div>
+            <div className="milestone-icon"><CheckCircle size={18} color="var(--color-ok)" /></div>
             <div className="milestone-content">
               <div className="milestone-title">Sustainable</div>
               <div className="milestone-detail">Savings will not deplete within 20 years</div>
