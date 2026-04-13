@@ -23,9 +23,9 @@ Open http://localhost:5173
 
 ## Importing Bank Data
 
-Export a CSV from your bank and upload it. The app auto-categorises transactions.
+Export a CSV from your bank and upload it. The app auto-detects the format and categorises transactions.
 
-**Supported banks:**
+**Supported formats:**
 - Monzo
 - Starling
 - Lloyds
@@ -33,6 +33,10 @@ Export a CSV from your bank and upload it. The app auto-categorises transactions
 - Snoop (aggregates multiple accounts)
 
 Or use manual entry for all fields.
+
+### Import Logic
+
+For large transaction histories (e.g. years of Snoop data), only the **last 30 days** are used. This reflects current spending habits rather than historical averages.
 
 ## How the Projection Works
 
