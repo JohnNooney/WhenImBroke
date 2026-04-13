@@ -629,16 +629,20 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
       {/* Summary Stats */}
       <div className="projection-summary">
         <div className="summary-stat">
-          <div className="summary-label">Total runway from target</div>
-          <div className="summary-value">{totalConsumptionRunway} months</div>
-        </div>
-        <div className="summary-stat">
-          <div className="summary-label">Monthly burn rate</div>
-          <div className="summary-value">{formatCurrency(result.monthlyExpenses - (result.monthlySurplus > 0 ? 0 : Math.abs(result.monthlySurplus)))}</div>
-        </div>
-        <div className="summary-stat">
           <div className="summary-label">Current runway</div>
-          <div className="summary-value">{result.runwayMonths} months</div>
+          <div className="summary-value">{result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}</div>
+        </div>
+        <div className="summary-stat">
+          <div className="summary-label">Consumption runway</div>
+          <div className="summary-value">{totalConsumptionRunway === Infinity ? '∞' : `${totalConsumptionRunway} mo`}</div>
+        </div>
+        <div className="summary-stat">
+          <div className="summary-label">Cost while saving</div>
+          <div className="summary-value">{formatCurrency(result.monthlyExpenses)}/mo</div>
+        </div>
+        <div className="summary-stat">
+          <div className="summary-label">Burn in consumption</div>
+          <div className="summary-value">{formatCurrency(result.livingExpenses)}/mo</div>
         </div>
       </div>
 
