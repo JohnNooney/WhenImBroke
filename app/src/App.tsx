@@ -24,8 +24,17 @@ function App() {
   const [data, setData] = useState<FinancialData>(defaultData);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-background-secondary)', padding: '0 1rem' }}>
-      <SavingsTracker data={data} onChange={setData} />
+    <div className="min-h-screen" style={{ background: 'var(--color-background-secondary)' }}>
+      <header className="app-header">
+        <div className="app-header-inner">
+          <span style={{ fontSize: '18px', lineHeight: 1 }}>💸</span>
+          <span className="app-name">WhenImBroke</span>
+          <span className="app-tagline">savings runway tracker</span>
+        </div>
+      </header>
+      <div style={{ padding: '0 1rem' }}>
+        <SavingsTracker data={data} onChange={setData} />
+      </div>
     </div>
   );
 }

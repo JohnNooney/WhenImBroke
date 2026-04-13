@@ -1,5 +1,5 @@
 import { useState, useRef, memo, useMemo } from 'react';
-import { MapPin, Target, AlertTriangle, CheckCircle, Info, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
+import { MapPin, Target, AlertTriangle, CheckCircle, Info, Wallet, PiggyBank, TrendingUp, Shield } from 'lucide-react';
 import type { FinancialData, RunwayResult } from '../types';
 import { calculateRunway, exportData, validateAndParseImport, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
@@ -322,6 +322,10 @@ export function SavingsTracker({ data, onChange }: Props) {
           </Section>
         </>
       )}
+      <div className="privacy-notice">
+        <Shield size={12} style={{ flexShrink: 0 }} />
+        <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
+      </div>
     </div>
   );
 }
