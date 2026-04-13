@@ -1,7 +1,7 @@
 import { useState, useRef, memo, useMemo } from 'react';
 import { MapPin, Target, AlertTriangle, CheckCircle, Info, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
 import type { FinancialData, RunwayResult } from '../types';
-import { calculateRunway, formatCurrency, formatDate } from '../utils/calculations';
+import { calculateRunway, exportData, validateAndParseImport, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
 
 interface Props {
@@ -46,7 +46,9 @@ const InputField = memo(function InputField({ label, value, onChange }: InputFie
 
 export function SavingsTracker({ data, onChange }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   const result = useMemo(() => calculateRunway(data), [data]);
 
@@ -55,6 +57,20 @@ export function SavingsTracker({ data, onChange }: Props) {
 
   const handleFieldChange = (field: keyof FinancialData) => (value: number) => {
     onChange({ ...data, [field]: value });
+  };
+
+  const handleJsonImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const text = await file.text();
+      const imported = validateAndParseImport(text);
+      onChange(imported);
+      setImportError(null);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Import failed.');
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -162,16 +178,42 @@ export function SavingsTracker({ data, onChange }: Props) {
               onChange={handleFileUpload}
               style={{ display: 'none' }}
             />
+            <input
+              ref={jsonInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleJsonImport}
+              style={{ display: 'none' }}
+            />
             <div className="import-row">
               <button className="btn" onClick={() => fileInputRef.current?.click()}>
                 Upload CSV / bank export
+              </button>
+              <button className="btn" onClick={() => jsonInputRef.current?.click()}>
+                Import saved data
               </button>
               <button className="btn primary" onClick={() => setActiveTab('expenses')}>
                 Manual entry
               </button>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+            {importError && (
+              <div style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '6px' }}>
+                {importError}
+              </div>
+            )}
+            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
               Supports: Monzo, Starling, Lloyds, HSBC, Snoop CSV exports
+            </div>
+          </Section>
+
+          <Section title="Export your data">
+            <div className="import-row">
+              <button className="btn" onClick={() => exportData(data)}>
+                Download as JSON
+              </button>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+              Save your settings to reimport later
             </div>
           </Section>
 
