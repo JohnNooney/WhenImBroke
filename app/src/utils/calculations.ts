@@ -1,14 +1,17 @@
 import type { FinancialData, RunwayResult, MonthProjection } from '../types';
 
 export function calculateRunway(data: FinancialData): RunwayResult {
-  const monthlyExpenses =
+  // Living expenses (excluding debt - these continue after debt paid off)
+  const livingExpenses =
     data.rent +
     data.utilities +
     data.groceries +
     data.subscriptions +
     data.transport +
-    data.pocketMoney +
-    data.monthlyDebtRepayment;
+    data.pocketMoney;
+  
+  // Total expenses (including debt - only during saving phase)
+  const monthlyExpenses = livingExpenses + data.monthlyDebtRepayment;
 
   const monthlySurplus = data.monthlyIncome - monthlyExpenses;
   const projections: MonthProjection[] = [];
@@ -17,10 +20,10 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   const today = new Date();
   const maxMonths = 240; // 20 years max projection
   
-  // Phase thresholds (months of expenses)
-  const comfortableThreshold = 12; // 12+ months = comfortable
-  const cautionThreshold = 6;      // 6-12 months = caution
-  const criticalThreshold = 3;     // 3-6 months = critical
+  // Phase thresholds (months of expenses) - from user config
+  const comfortableThreshold = data.comfortableThreshold;
+  const cautionThreshold = data.cautionThreshold;
+  const criticalThreshold = data.criticalThreshold;
   
   let lastSafeDate: Date | null = null;
   let depletionDate: Date | null = null;
@@ -79,8 +82,10 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       consumptionStarted = true;
     }
     
-    // Calculate months of runway at current balance (based on expenses)
-    const monthsOfRunway = monthlyExpenses > 0 ? savingsBalance / monthlyExpenses : Infinity;
+    // Calculate months of runway at current balance
+    // Use living expenses (no debt) if in consumption mode, otherwise total expenses
+    const currentExpenses = consumptionStarted ? livingExpenses : monthlyExpenses;
+    const monthsOfRunway = currentExpenses > 0 ? savingsBalance / currentExpenses : Infinity;
     
     let phase: MonthProjection['phase'];
     if (savingsBalance <= 0) {
@@ -126,8 +131,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     // Update balance for next month based on current mode
     if (consumptionStarted) {
       // After target reached AND debt paid: consume savings (no income, no debt payment)
-      const expensesWithoutDebt = monthlyExpenses - data.monthlyDebtRepayment;
-      savingsBalance -= expensesWithoutDebt;
+      savingsBalance -= livingExpenses;
     } else {
       // Before ready: save surplus (includes debt repayment)
       savingsBalance += monthlySurplus;
@@ -139,13 +143,14 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   }
   
   // Calculate runway months (how long savings last if income stops today)
-  const runwayMonths = monthlyExpenses > 0 
-    ? Math.floor(data.currentSavings / monthlyExpenses)
+  // Use living expenses since debt would be paid off in consumption mode
+  const runwayMonths = livingExpenses > 0 
+    ? Math.floor(data.currentSavings / livingExpenses)
     : Infinity;
   
-  // How long target savings will last when spending begins
-  const targetRunwayMonths = monthlyExpenses > 0
-    ? Math.floor(data.emergencyFundTarget / monthlyExpenses)
+  // How long target savings will last when spending begins (no debt payments)
+  const targetRunwayMonths = livingExpenses > 0
+    ? Math.floor(data.emergencyFundTarget / livingExpenses)
     : Infinity;
 
   return {
