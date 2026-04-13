@@ -1,5 +1,5 @@
 import { useState, useRef, memo, useMemo } from 'react';
-import { MapPin, Target, AlertTriangle, CheckCircle, Info, Wallet, PiggyBank, TrendingUp, Shield } from 'lucide-react';
+import { MapPin, Target, AlertTriangle, Info, Wallet, PiggyBank, TrendingUp, Shield } from 'lucide-react';
 import type { FinancialData, RunwayResult } from '../types';
 import { calculateRunway, exportData, validateAndParseImport, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
