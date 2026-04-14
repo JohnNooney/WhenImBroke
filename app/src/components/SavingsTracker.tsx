@@ -167,18 +167,38 @@ export function SavingsTracker({ data, onChange }: Props) {
           <div className="value" style={{ color: getValueColor('ok') }}>
             {formatCurrency(data.currentSavings)}
           </div>
+          {data.currentSavings >= data.savingsTarget && data.savingsTarget > 0 ? (
+            <div className="metric-sub" style={{ color: getValueColor('ok') }}>Target met</div>
+          ) : result.targetReachedDate ? (
+            <div className="metric-sub">→ {formatCurrency(data.savingsTarget)} by {formatDate(result.targetReachedDate)}</div>
+          ) : null}
         </div>
         <div className="metric">
           <div className="label">Monthly net <Tooltip text="Income minus all expenses including debt repayments. Positive means you're building savings each month." /></div>
           <div className="value" style={{ color: getValueColor(getSurplusColor()) }}>
             {result.monthlySavings >= 0 ? '+' : ''}{formatCurrency(result.monthlySavings)}
           </div>
+          {data.totalDebt > 0 && data.monthlyDebtRepayment > 0 && (() => {
+            const afterDebt = data.monthlyIncome - result.livingExpenses - data.monthlySavingsContribution;
+            return (
+              <div className="metric-sub">
+                → <span style={{ color: getValueColor(afterDebt > 500 ? 'ok' : afterDebt > 0 ? 'warn' : 'danger') }}>
+                  {afterDebt >= 0 ? '+' : ''}{formatCurrency(afterDebt)}
+                </span> after debt-free
+              </div>
+            );
+          })()}
         </div>
         <div className="metric">
           <div className="label">Runway <Tooltip text="Months your current savings would last if income stopped today, spending only on living expenses." /></div>
           <div className="value">
             {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
           </div>
+          {data.savingsTarget > 0 && result.targetRunwayMonths !== result.runwayMonths && (
+            <div className="metric-sub">
+              → {result.targetRunwayMonths === Infinity ? '∞' : `${result.targetRunwayMonths} mo`} at target
+            </div>
+          )}
         </div>
         <div className="metric">
           <div className="label">{nextMilestone.label} <Tooltip text={nextMilestone.tooltip} /></div>
