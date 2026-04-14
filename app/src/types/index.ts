@@ -33,6 +33,7 @@ export interface MonthProjection {
   expenses: number;
   debtPaid: number;
   netChange: number;
+  remainingDebt: number;
 }
 
 export interface RunwayResult {

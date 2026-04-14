@@ -155,6 +155,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       expenses: projExpenses,
       debtPaid: projDebtPaid,
       netChange: projNetChange,
+      remainingDebt: Math.max(0, remainingDebt),
     });
     
     // Update balance for next month based on current mode

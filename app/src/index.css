@@ -152,6 +152,53 @@
   color: var(--color-text-primary);
 }
 
+.metric .metric-sub {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+/* Dashboard secondary details strip */
+.dash-strip {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.55rem 0.85rem;
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.dash-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 0.6rem;
+}
+
+.dash-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dash-val {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.dash-sep {
+  width: 0.5px;
+  height: 28px;
+  background: var(--color-border-tertiary);
+  flex-shrink: 0;
+}
+
 .timeline {
   position: relative;
   height: 12px;
