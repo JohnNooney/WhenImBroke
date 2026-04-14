@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function Dashboard({ result }: Props) {
-  const isPositive = result.monthlySurplus >= 0;
+  const isPositive = result.monthlySavings >= 0;
 
   return (
     <div className="space-y-6">
@@ -27,7 +27,7 @@ export function Dashboard({ result }: Props) {
         />
         <SummaryCard
           title="Monthly Surplus"
-          value={formatCurrency(result.monthlySurplus)}
+          value={formatCurrency(result.monthlySavings)}
           icon={isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
           color={isPositive ? 'emerald' : 'red'}
         />
