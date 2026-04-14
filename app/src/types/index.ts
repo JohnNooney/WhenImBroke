@@ -28,6 +28,11 @@ export interface MonthProjection {
   date: Date;
   savingsBalance: number;
   phase: 'comfortable' | 'caution' | 'critical' | 'depleted';
+  mode: 'saving' | 'consumption';
+  income: number;
+  expenses: number;
+  debtPaid: number;
+  netChange: number;
 }
 
 export interface RunwayResult {

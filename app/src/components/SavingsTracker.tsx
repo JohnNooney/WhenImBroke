@@ -1,6 +1,6 @@
 import { useState, useRef, memo, useMemo } from 'react';
 import { MapPin, Target, AlertTriangle, Info, Wallet, PiggyBank, TrendingUp, Shield } from 'lucide-react';
-import type { FinancialData, RunwayResult } from '../types';
+import type { FinancialData, RunwayResult, MonthProjection } from '../types';
 import { calculateRunway, exportData, validateAndParseImport, formatCurrency, formatDate } from '../utils/calculations';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../utils/csvParser';
 
@@ -666,39 +666,95 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
 
 function ProjectionChart({ result }: { result: RunwayResult }) {
   const projections = result.projections.slice(0, 24);
+  const [selected, setSelected] = useState<MonthProjection | null>(null);
   if (projections.length === 0) return null;
 
   const maxBalance = Math.max(...projections.map(p => p.savingsBalance));
 
   return (
     <Section title="Savings over time">
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '120px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '120px', position: 'relative' }}>
         {projections.map((p, i) => {
           const height = maxBalance > 0 ? (p.savingsBalance / maxBalance) * 100 : 0;
           const color = p.phase === 'comfortable' ? 'var(--color-ok)' 
             : p.phase === 'caution' ? 'var(--color-warn)' 
             : p.phase === 'critical' ? 'var(--color-danger)'
             : 'var(--color-border-tertiary)';
+          const isSelected = selected?.month === p.month;
           
           return (
             <div
               key={i}
+              onClick={() => setSelected(p)}
               style={{
                 flex: 1,
                 height: `${Math.max(height, 2)}%`,
                 background: color,
                 borderRadius: '2px 2px 0 0',
                 minWidth: '8px',
+                cursor: 'pointer',
+                position: 'relative',
+                outline: isSelected ? '2px solid var(--color-text-primary)' : 'none',
+                outlineOffset: '2px',
               }}
-              title={`${formatDate(p.date)}: ${formatCurrency(p.savingsBalance)}`}
             />
           );
         })}
+        
+        {selected && (
+          <div
+            style={{
+              position: 'absolute',
+              top: -8,
+              bottom: -8,
+              left: `${(selected.month / projections.length) * 100 + (50 / projections.length)}%`,
+              width: '2px',
+              borderLeft: '2px dotted var(--color-text-primary)',
+              pointerEvents: 'none',
+              transform: 'translateX(-50%)',
+            }}
+          />
+        )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
         <span>{formatDate(projections[0].date)}</span>
         <span>{formatDate(projections[projections.length - 1].date)}</span>
       </div>
+      
+      {selected && (
+        <div style={{ 
+          marginTop: '12px', 
+          padding: '12px', 
+          background: 'var(--color-bg-secondary)', 
+          borderRadius: '8px',
+          fontSize: '13px',
+          border: '2px solid var(--color-text-primary)'
+        }}>
+          <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+            <span>{formatDate(selected.date)} · Month {selected.month + 1} · {selected.mode === 'saving' ? 'Saving Mode' : 'Consumption Mode'}</span>
+            <button 
+              onClick={() => setSelected(null)}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer',
+                fontSize: '16px',
+                color: 'var(--color-text-secondary)'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+            <div>Balance: <strong>{formatCurrency(selected.savingsBalance)}</strong></div>
+            <div>Phase: <strong style={{ color: selected.phase === 'comfortable' ? 'var(--color-ok)' : selected.phase === 'caution' ? 'var(--color-warn)' : selected.phase === 'critical' ? 'var(--color-danger)' : 'inherit' }}>{selected.phase}</strong></div>
+            {selected.income > 0 && <div>Income: <span style={{ color: 'var(--color-ok)' }}>+{formatCurrency(selected.income)}</span></div>}
+            <div>Expenses: <span style={{ color: 'var(--color-danger)' }}>-{formatCurrency(selected.expenses)}</span></div>
+            {selected.debtPaid > 0 && <div>Debt paid: <span style={{ color: 'var(--color-warn)' }}>-{formatCurrency(selected.debtPaid)}</span></div>}
+            <div>Net: <strong style={{ color: selected.netChange >= 0 ? 'var(--color-ok)' : 'var(--color-danger)' }}>{selected.netChange >= 0 ? '+' : ''}{formatCurrency(selected.netChange)}</strong></div>
+          </div>
+        </div>
+      )}
     </Section>
   );
 }

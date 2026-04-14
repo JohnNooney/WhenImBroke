@@ -136,11 +136,21 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       phases.critical.end.setMonth(phases.critical.end.getMonth() - 1);
     }
     
+    const projIncome = consumptionStarted ? 0 : data.monthlyIncome;
+    const projExpenses = consumptionStarted ? livingExpenses : monthlyExpenses;
+    const projDebtPaid = consumptionStarted ? 0 : (remainingDebt > 0 ? Math.min(data.monthlyDebtRepayment, remainingDebt + data.monthlyDebtRepayment) : 0);
+    const projNetChange = consumptionStarted ? -livingExpenses : monthlySurplus;
+
     projections.push({
       month,
       date,
       savingsBalance: Math.max(0, savingsBalance),
       phase,
+      mode: consumptionStarted ? 'consumption' : 'saving',
+      income: projIncome,
+      expenses: projExpenses,
+      debtPaid: projDebtPaid,
+      netChange: projNetChange,
     });
     
     // Update balance for next month based on current mode
