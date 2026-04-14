@@ -350,7 +350,7 @@ function Section({ title, children, onInfoClick }: { title: string; children: Re
   );
 }
 
-function InfoModal({ onClose }: { onClose: () => void }) {
+function InfoModal({ onClose, data }: { onClose: () => void; data: FinancialData }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -377,13 +377,16 @@ function InfoModal({ onClose }: { onClose: () => void }) {
             <li>Savings decrease by monthly expenses</li>
           </ul>
           
-          <h3>Phase Colours</h3>
+          <h3>Phase Breakdown</h3>
+          <p>During Consumption Mode, your savings runway determines which phase you're in. <strong>Thresholds define the runway range</strong> for each phase; actual <strong>time spent</strong> depends on your savings balance.</p>
           <div className="guide-phases">
-            <div><span className="dot" style={{ background: 'var(--color-ok)' }} /> <strong>Comfortable:</strong> Above your comfortable threshold</div>
-            <div><span className="dot" style={{ background: 'var(--color-warn)' }} /> <strong>Caution:</strong> Between caution and comfortable thresholds</div>
-            <div><span className="dot" style={{ background: 'var(--color-danger)' }} /> <strong>Critical:</strong> Below caution threshold</div>
+            <div><span className="dot" style={{ background: 'var(--color-ok)' }} /> <strong>Comfortable:</strong> Runway &gt; {data.comfortableThreshold} months</div>
+            <div><span className="dot" style={{ background: 'var(--color-warn)' }} /> <strong>Caution:</strong> Runway {data.criticalThreshold+1}-{data.cautionThreshold} months</div>
+            <div><span className="dot" style={{ background: 'var(--color-danger)' }} /> <strong>Critical:</strong> Runway 0-{data.criticalThreshold} months</div>
+            <div><span className="dot" style={{ background: 'var(--color-border-tertiary)' }} /> <strong>Depleted:</strong> 0 months runway — savings exhausted</div>
           </div>
-          <p style={{ marginTop: '0.5rem' }}>Adjust thresholds in "Phase thresholds" section below.</p>
+          <p style={{ marginTop: '0.5rem' }}>Critical ends the month before depletion. Depleted shows the actual month you run out of money.</p>
+          <p>Adjust thresholds in "Phase thresholds" section below.</p>
           
           <h3>Key Calculations</h3>
           <table className="calc-table">
@@ -449,7 +452,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
 
   return (
     <>
-    {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
+    {showInfo && <InfoModal onClose={() => setShowInfo(false)} data={data} />}
     <Section title="Survival projection" onInfoClick={() => setShowInfo(true)}>
       
       {/* Key Milestones */}
