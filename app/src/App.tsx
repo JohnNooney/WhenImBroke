@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FinancialData } from './types';
 import { SavingsTracker } from './components/SavingsTracker';
+import { loadFromStorage, saveToStorage } from './utils/calculations';
 
 const defaultData: FinancialData = {
   currentSavings: 14200,
@@ -21,7 +22,11 @@ const defaultData: FinancialData = {
 };
 
 function App() {
-  const [data, setData] = useState<FinancialData>(defaultData);
+  const [data, setData] = useState<FinancialData>(() => loadFromStorage() ?? defaultData);
+
+  useEffect(() => {
+    saveToStorage(data);
+  }, [data]);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background-secondary)' }}>
