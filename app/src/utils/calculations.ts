@@ -28,9 +28,10 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   let depletionDate: Date | null = null;
   
   // Calculate recommended cutoff based on target savings AND debt payoff
-  // How many months to reach target from current savings
-  const monthsToReachTarget = monthlySurplus > 0 && data.currentSavings < data.emergencyFundTarget
-    ? Math.ceil((data.emergencyFundTarget - data.currentSavings) / monthlySurplus)
+  // Total monthly savings rate = explicit contribution + any surplus
+  const totalMonthlySavings = data.monthlySavingsContribution + monthlySurplus;
+  const monthsToReachTarget = totalMonthlySavings > 0 && data.currentSavings < data.emergencyFundTarget
+    ? Math.ceil((data.emergencyFundTarget - data.currentSavings) / totalMonthlySavings)
     : 0;
   
   // How many months to pay off all debt
@@ -158,8 +159,8 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       // After target reached AND debt paid: consume savings (no income, no debt payment)
       savingsBalance -= livingExpenses;
     } else {
-      // Before ready: save surplus (includes debt repayment)
-      savingsBalance += monthlySurplus;
+      // Before ready: save contribution + any surplus
+      savingsBalance += data.monthlySavingsContribution + monthlySurplus;
       remainingDebt -= data.monthlyDebtRepayment;
     }
     
