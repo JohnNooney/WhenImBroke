@@ -128,8 +128,8 @@ export function SavingsTracker({ data, onChange }: Props) {
   };
 
   const getSurplusColor = () => {
-    if (result.monthlySurplus > 500) return 'ok';
-    if (result.monthlySurplus > 0) return 'warn';
+    if (result.monthlySavings > 500) return 'ok';
+    if (result.monthlySavings > 0) return 'warn';
     return 'danger';
   };
 
@@ -157,9 +157,9 @@ export function SavingsTracker({ data, onChange }: Props) {
           </div>
         </div>
         <div className="metric">
-          <div className="label">Monthly surplus <Tooltip text="Income minus all expenses including debt repayments. Positive means you're accumulating savings each month." /></div>
+          <div className="label">Monthly savings <Tooltip text="Income minus all expenses including debt repayments. Positive means you're accumulating savings each month." /></div>
           <div className="value" style={{ color: getValueColor(getSurplusColor()) }}>
-            {result.monthlySurplus >= 0 ? '+' : ''}{formatCurrency(result.monthlySurplus)}
+            {result.monthlySavings >= 0 ? '+' : ''}{formatCurrency(result.monthlySavings)}
           </div>
         </div>
         <div className="metric">
@@ -173,6 +173,10 @@ export function SavingsTracker({ data, onChange }: Props) {
           <div className="value">
             {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
           </div>
+        </div>
+        <div className="metric">
+          <div className="label">Expenses after debt payoff <Tooltip text="Monthly expenses once debt is cleared: living expenses + your savings contribution. Debt repayment stops." /></div>
+          <div className="value">{formatCurrency(result.livingExpenses + data.monthlySavingsContribution)}</div>
         </div>
       </div>
 
@@ -570,7 +574,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
           <div className="phase-block-details">
             <div>Now → {result.lastSafeDate ? formatDate(result.lastSafeDate) : 'Ongoing'}</div>
             <div className="phase-block-sub">
-              Income covers expenses · Surplus: {formatCurrency(result.monthlySurplus)}/mo · Debt being paid down
+              Income covers expenses · Surplus: {formatCurrency(result.monthlySavings)}/mo · Debt being paid down
             </div>
           </div>
         </div>

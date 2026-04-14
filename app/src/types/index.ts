@@ -39,7 +39,7 @@ export interface RunwayResult {
   monthlyExpenses: number;
   livingExpenses: number;
   monthlyIncome: number;
-  monthlySurplus: number;
+  monthlySavings: number;
   runwayMonths: number;
   targetRunwayMonths: number;
   monthsToReachTarget: number | null;
