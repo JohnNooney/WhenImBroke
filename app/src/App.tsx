@@ -7,7 +7,7 @@ const defaultData: FinancialData = {
   currentSavings: 14200,
   monthlyIncome: 1905,
   monthlySavingsContribution: 200,
-  emergencyFundTarget: 5000,
+  savingsTarget: 5000,
   rent: 950,
   utilities: 120,
   groceries: 220,

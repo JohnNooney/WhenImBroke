@@ -259,7 +259,7 @@ export function SavingsTracker({ data, onChange }: Props) {
             <InputField label="Current savings" value={data.currentSavings} onChange={handleFieldChange('currentSavings')} />
           </div>
           <div className="row">
-            <InputField label="Emergency fund target" value={data.emergencyFundTarget} onChange={handleFieldChange('emergencyFundTarget')} />
+            <InputField label="Savings target" value={data.savingsTarget} onChange={handleFieldChange('savingsTarget')} />
           </div>
         </Section>
       )}
@@ -487,7 +487,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
         )}
 
         {/* Target Savings Milestone */}
-        {result.targetReachedDate && data.currentSavings < data.emergencyFundTarget && (
+        {result.targetReachedDate && data.currentSavings < data.savingsTarget && (
           <div className="milestone-item">
             <div className="milestone-icon"><PiggyBank size={18} /></div>
             <div className="milestone-content">
@@ -498,7 +498,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                   <span className="badge" style={{ marginLeft: '8px' }}>{result.monthsToReachTarget} mo away</span>
                 )}
               </div>
-              <div className="milestone-sub">Target: {formatCurrency(data.emergencyFundTarget)} · Need: {formatCurrency(data.emergencyFundTarget - data.currentSavings)}</div>
+              <div className="milestone-sub">Target: {formatCurrency(data.savingsTarget)} · Need: {formatCurrency(data.savingsTarget - data.currentSavings)}</div>
             </div>
           </div>
         )}
@@ -515,7 +515,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                   <span className="badge ok" style={{ marginLeft: '8px' }}>{savingPhaseDuration} mo away</span>
                 )}
               </div>
-              <div className="milestone-sub">Target reached & debt-free · Peak savings: {formatCurrency(data.emergencyFundTarget)}</div>
+              <div className="milestone-sub">Target reached & debt-free · Peak savings: {formatCurrency(data.savingsTarget)}</div>
               {consumptionDuration !== null && (
                 <div className="milestone-sub">Consumption runway: {consumptionDuration} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
               )}

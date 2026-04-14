@@ -143,7 +143,7 @@ export function InputForm({ data, onChange }: Props) {
             <InputField label="Current Savings" field="currentSavings" icon={PoundSterling} value={data.currentSavings} onFieldChange={handleChange} />
             <InputField label="Monthly Income" field="monthlyIncome" icon={PoundSterling} value={data.monthlyIncome} onFieldChange={handleChange} />
             <InputField label="Monthly Savings" field="monthlySavingsContribution" icon={PoundSterling} value={data.monthlySavingsContribution} onFieldChange={handleChange} />
-            <InputField label="Emergency Fund Target" field="emergencyFundTarget" icon={PoundSterling} value={data.emergencyFundTarget} onFieldChange={handleChange} />
+            <InputField label="Savings Target" field="savingsTarget" icon={PoundSterling} value={data.savingsTarget} onFieldChange={handleChange} />
           </div>
         </div>
 

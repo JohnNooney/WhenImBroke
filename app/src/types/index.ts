@@ -3,7 +3,7 @@ export interface FinancialData {
   currentSavings: number;
   monthlyIncome: number;
   monthlySavingsContribution: number;
-  emergencyFundTarget: number;
+  savingsTarget: number;
 
   // Monthly Expenses
   rent: number;
