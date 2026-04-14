@@ -437,7 +437,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
     ? monthsBetween(result.lastSafeDate, result.phases.comfortable.end)
     : null;
   const cautionDuration = monthsBetween(result.phases.caution.start, result.phases.caution.end);
-  const criticalDuration = monthsBetween(result.phases.critical.start, result.depletionDate);
+  const criticalDuration = monthsBetween(result.phases.critical.start, result.phases.critical.end);
   
   // Total runway after switching to consumption
   const totalConsumptionRunway = result.targetRunwayMonths;
@@ -596,7 +596,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                 <div>
                   {formatDate(result.lastSafeDate)} → {result.phases.comfortable.end ? formatDate(result.phases.comfortable.end) : 'Ongoing'}
                 </div>
-                <div className="phase-block-sub">{data.comfortableThreshold}+ months runway</div>
+                <div className="phase-block-sub">Runway &gt; {data.cautionThreshold} months</div>
               </div>
             </div>
 
@@ -613,7 +613,7 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                   <div>
                     {formatDate(result.phases.caution.start)} → {result.phases.caution.end ? formatDate(result.phases.caution.end) : 'Ongoing'}
                   </div>
-                  <div className="phase-block-sub">{data.cautionThreshold}-{data.comfortableThreshold} months runway</div>
+                  <div className="phase-block-sub">{data.criticalThreshold+1}-{data.cautionThreshold} months runway</div>
                 </div>
               </div>
             )}
@@ -629,9 +629,22 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
                 </div>
                 <div className="phase-block-details">
                   <div>
-                    {formatDate(result.phases.critical.start)} → {result.depletionDate ? formatDate(result.depletionDate) : 'Ongoing'}
+                    {formatDate(result.phases.critical.start)} → {result.phases.critical.end ? formatDate(result.phases.critical.end) : 'Ongoing'}
                   </div>
-                  <div className="phase-block-sub">Under {data.cautionThreshold} months runway · Action needed</div>
+                  <div className="phase-block-sub">0-{data.criticalThreshold} months runway · Action needed</div>
+                </div>
+              </div>
+            )}
+
+            {result.depletionDate && (
+              <div className="phase-block sub-phase">
+                <div className="phase-block-header">
+                  <span className="dot" style={{ background: 'var(--color-border-tertiary)' }} />
+                  <span className="phase-block-title">Depleted</span>
+                </div>
+                <div className="phase-block-details">
+                  <div>{formatDate(result.depletionDate)}</div>
+                  <div className="phase-block-sub">Savings exhausted · No runway remaining</div>
                 </div>
               </div>
             )}
