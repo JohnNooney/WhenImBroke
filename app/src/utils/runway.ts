@@ -14,6 +14,8 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   const monthlyExpenses = livingExpenses + data.monthlyDebtRepayment + data.monthlySavingsContribution;
 
   const monthlySavings = data.monthlyIncome - monthlyExpenses;
+  // Surplus once debt is paid off: freed-up debt repayment flows into savings
+  const postDebtMonthlySavings = monthlySavings + data.monthlyDebtRepayment;
   const projections: MonthProjection[] = [];
   
   let savingsBalance = data.currentSavings;
@@ -208,6 +210,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     livingExpenses,
     monthlyIncome: data.monthlyIncome,
     monthlySavings,
+    postDebtMonthlySavings,
     runwayMonths,
     targetRunwayMonths,
     monthsToReachTarget: monthsToReachTarget === Infinity ? null : monthsToReachTarget,

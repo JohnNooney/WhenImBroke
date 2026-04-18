@@ -223,7 +223,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
                     : 'Ongoing'}
               </div>
               <div className="phase-block-sub">
-                Debt paid off · Full surplus going to savings
+                Surplus: {formatCurrency(result.postDebtMonthlySavings)}/mo · Debt paid off · Full surplus going to savings
               </div>
             </div>
           </div>
