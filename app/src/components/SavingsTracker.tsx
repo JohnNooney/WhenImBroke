@@ -507,6 +507,15 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
 
   // Phase durations
   const savingPhaseDuration = monthsFromNow(result.lastSafeDate);
+  
+  // Saving phase sub-durations
+  const preDebtDuration = result.phases.saving.preDebt.start
+    ? monthsBetween(result.phases.saving.preDebt.start, result.phases.saving.preDebt.end ?? result.lastSafeDate)
+    : null;
+  const postDebtDuration = result.phases.saving.postDebt.start
+    ? monthsBetween(result.phases.saving.postDebt.start, result.phases.saving.postDebt.end ?? result.lastSafeDate)
+    : null;
+  
   const comfortableDuration = result.phases.comfortable.end 
     ? monthsBetween(result.lastSafeDate, result.phases.comfortable.end)
     : null;
@@ -640,11 +649,62 @@ function ProjectionSection({ result, data }: { result: RunwayResult; data: Finan
           </div>
           <div className="phase-block-details">
             <div>Now → {result.lastSafeDate ? formatDate(result.lastSafeDate) : 'Ongoing'}</div>
+            <div className="phase-block-sub">Income covers expenses · Building savings</div>
+          </div>
+        </div>
+
+        {/* Pre-Debt Sub-Phase */}
+        <div className="phase-block sub-phase">
+          <div className="phase-block-header">
+            <span className="dot" style={{ background: 'var(--color-info, #3b82f6)' }} />
+            <span className="phase-block-title">Pre-Debt (Saving + Paying Debt)</span>
+            {preDebtDuration !== null && preDebtDuration > 0 && (
+              <span className="phase-block-duration">{preDebtDuration} months</span>
+            )}
+          </div>
+          <div className="phase-block-details">
+            <div>
+              {result.phases.saving.preDebt.start ? formatDate(result.phases.saving.preDebt.start) : 'Now'}
+              {' → '}
+              {result.phases.saving.preDebt.end
+                ? formatDate(result.phases.saving.preDebt.end)
+                : result.phases.saving.postDebt.start
+                  ? formatDate(result.phases.saving.postDebt.start)
+                  : result.lastSafeDate
+                    ? formatDate(result.lastSafeDate)
+                    : 'Ongoing'}
+            </div>
             <div className="phase-block-sub">
-              Income covers expenses · Surplus: {formatCurrency(result.monthlySavings)}/mo · Debt being paid down
+              Surplus: {formatCurrency(result.monthlySavings)}/mo · Debt being paid down
             </div>
           </div>
         </div>
+
+        {/* Post-Debt Sub-Phase (only if applicable) */}
+        {result.phases.saving.postDebt.start && (
+          <div className="phase-block sub-phase">
+            <div className="phase-block-header">
+              <span className="dot" style={{ background: 'var(--color-info-dark, #1d4ed8)' }} />
+              <span className="phase-block-title">Post-Debt (Saving Only)</span>
+              {postDebtDuration !== null && postDebtDuration > 0 && (
+                <span className="phase-block-duration">{postDebtDuration} months</span>
+              )}
+            </div>
+            <div className="phase-block-details">
+              <div>
+                {formatDate(result.phases.saving.postDebt.start)} → {' '}
+                {result.phases.saving.postDebt.end
+                  ? formatDate(result.phases.saving.postDebt.end)
+                  : result.lastSafeDate
+                    ? formatDate(result.lastSafeDate)
+                    : 'Ongoing'}
+              </div>
+              <div className="phase-block-sub">
+                Debt paid off · Full surplus going to savings
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Consumption Phases */}
         {result.lastSafeDate && (

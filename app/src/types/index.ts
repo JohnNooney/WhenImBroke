@@ -54,6 +54,10 @@ export interface RunwayResult {
     comfortable: { start: Date; end: Date | null };
     caution: { start: Date | null; end: Date | null };
     critical: { start: Date | null; end: Date | null };
+    saving: {
+      preDebt: { start: Date | null; end: Date | null };
+      postDebt: { start: Date | null; end: Date | null };
+    };
   };
 }
 

@@ -73,6 +73,10 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     comfortable: { start: today, end: null as Date | null },
     caution: { start: null as Date | null, end: null as Date | null },
     critical: { start: null as Date | null, end: null as Date | null },
+    saving: {
+      preDebt: { start: today, end: null as Date | null },
+      postDebt: { start: null as Date | null, end: null as Date | null },
+    },
   };
 
   // Track if we've hit the target AND paid off debt → ready for consumption mode
@@ -80,6 +84,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   let debtPaidOff = data.totalDebt <= 0;
   let consumptionStarted = targetReached && debtPaidOff;
   let remainingDebt = data.totalDebt;
+  let debtJustPaidOff = false;
 
   for (let month = 0; month < maxMonths; month++) {
     const date = new Date(today);
@@ -93,12 +98,32 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     // Check if debt paid off this month
     if (!debtPaidOff && remainingDebt <= 0) {
       debtPaidOff = true;
+      debtJustPaidOff = true;
+      // Track saving phase transition: preDebt -> postDebt
+      if (!consumptionStarted) {
+        phases.saving.preDebt.end = new Date(date);
+        phases.saving.preDebt.end.setMonth(phases.saving.preDebt.end.getMonth() - 1);
+        phases.saving.postDebt.start = new Date(date);
+      }
     }
     
     // Start consumption only when BOTH conditions met
     if (!consumptionStarted && targetReached && debtPaidOff) {
       consumptionStarted = true;
+      // End the postDebt saving phase if it was active
+      if (phases.saving.postDebt.start && !phases.saving.postDebt.end) {
+        phases.saving.postDebt.end = new Date(date);
+        phases.saving.postDebt.end.setMonth(phases.saving.postDebt.end.getMonth() - 1);
+      }
+      // Or end preDebt if debt paid off same month as target reached
+      if (phases.saving.preDebt.start && !phases.saving.preDebt.end && debtJustPaidOff) {
+        phases.saving.preDebt.end = new Date(date);
+        phases.saving.preDebt.end.setMonth(phases.saving.preDebt.end.getMonth() - 1);
+      }
     }
+    
+    // Reset flag after processing
+    debtJustPaidOff = false;
     
     // Calculate months of runway at current balance
     // During saving phase: living expenses + savings contribution + (debt if not paid off)
