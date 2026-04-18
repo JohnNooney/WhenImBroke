@@ -163,8 +163,12 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       // After target reached AND debt paid: consume savings (no income, no debt payment)
       savingsBalance -= livingExpenses;
     } else {
-      // Before ready: all surplus goes to savings (already includes contribution in expenses)
-      savingsBalance += monthlySavings;
+      // Before ready: all surplus goes to savings
+      // Once debt paid off, that payment becomes extra savings
+      const actualMonthlySavings = remainingDebt <= 0
+        ? data.monthlyIncome - (livingExpenses + data.monthlySavingsContribution)
+        : monthlySavings;
+      savingsBalance += actualMonthlySavings;
       remainingDebt -= data.monthlyDebtRepayment;
     }
     
