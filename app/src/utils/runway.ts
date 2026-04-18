@@ -13,7 +13,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
   // Total expenses (including debt and savings contribution - only during saving phase)
   const monthlyExpenses = livingExpenses + data.monthlyDebtRepayment + data.monthlySavingsContribution;
 
-  const monthlySavings = data.monthlyIncome - monthlyExpenses;
+  const monthlySavings = data.monthlyIncome - livingExpenses - data.monthlyDebtRepayment;
   // Surplus once debt is paid off: freed-up debt repayment flows into savings
   const postDebtMonthlySavings = monthlySavings + data.monthlyDebtRepayment;
   const projections: MonthProjection[] = [];
@@ -156,9 +156,11 @@ export function calculateRunway(data: FinancialData): RunwayResult {
     }
     
     const projIncome = consumptionStarted ? 0 : data.monthlyIncome;
-    const projExpenses = currentExpenses;
+    const projExpenses = livingExpenses;
     const projDebtPaid = consumptionStarted ? 0 : (debtPaidOff ? 0 : Math.min(data.monthlyDebtRepayment, remainingDebt + data.monthlyDebtRepayment));
-    const projNetChange = consumptionStarted ? -livingExpenses : (data.monthlyIncome - projExpenses);
+    const projNetChange = consumptionStarted
+      ? -livingExpenses
+      : (remainingDebt <= 0 ? data.monthlyIncome - livingExpenses : monthlySavings);
 
     projections.push({
       month,
@@ -181,7 +183,7 @@ export function calculateRunway(data: FinancialData): RunwayResult {
       // Before ready: all surplus goes to savings
       // Once debt paid off, that payment becomes extra savings
       const actualMonthlySavings = remainingDebt <= 0
-        ? data.monthlyIncome - (livingExpenses + data.monthlySavingsContribution)
+        ? data.monthlyIncome - livingExpenses
         : monthlySavings;
       savingsBalance += actualMonthlySavings;
       remainingDebt -= data.monthlyDebtRepayment;

@@ -39,7 +39,7 @@ export function deriveMetrics(data: FinancialData, result: RunwayResult): Derive
   const savingsRate = data.monthlyIncome > 0
     ? Math.round((result.monthlySavings / data.monthlyIncome) * 100)
     : 0;
-  const afterDebtSurplus = data.monthlyIncome - result.livingExpenses - data.monthlySavingsContribution;
+  const afterDebtSurplus = result.postDebtMonthlySavings;
   const isTargetMet = data.currentSavings >= data.savingsTarget && data.savingsTarget > 0;
 
   // Months-away values
