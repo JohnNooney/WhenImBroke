@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Shield } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
+import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
 import { MetricsGrid, DashStrip } from './metrics';
 import { OverviewTab, ExpensesTab, IncomeTab, DebtsTab, ProjectionTab } from './tabs';
 
@@ -25,6 +26,7 @@ export function SavingsTracker({ data, onChange }: Props) {
   const [importError, setImportError] = useState<string | null>(null);
 
   const result = useMemo(() => calculateRunway(data), [data]);
+  const derived = useDerivedMetrics(data, result);
 
   return (
     <div className="wrap">
@@ -42,16 +44,17 @@ export function SavingsTracker({ data, onChange }: Props) {
       </div>
 
       {/* Primary Stats */}
-      <MetricsGrid data={data} result={result} />
+      <MetricsGrid data={data} result={result} derived={derived} />
 
       {/* Supporting Details */}
-      <DashStrip data={data} result={result} />
+      <DashStrip data={data} result={result} derived={derived} />
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <OverviewTab
           data={data}
           result={result}
+          derived={derived}
           onChange={onChange}
           onTabChange={setActiveTab}
           importError={importError}
@@ -72,7 +75,7 @@ export function SavingsTracker({ data, onChange }: Props) {
       )}
 
       {activeTab === 'projection' && (
-        <ProjectionTab data={data} result={result} onChange={onChange} />
+        <ProjectionTab data={data} result={result} derived={derived} onChange={onChange} />
       )}
 
       <div className="privacy-notice">

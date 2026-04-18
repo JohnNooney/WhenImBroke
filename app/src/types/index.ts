@@ -62,6 +62,42 @@ export interface RunwayResult {
   };
 }
 
+export type ValueColor = 'ok' | 'warn' | 'danger' | 'neutral';
+
+export interface DerivedMetrics {
+  // Surplus & rates
+  savingsRate: number;
+  afterDebtSurplus: number;
+  surplusColor: ValueColor;
+  isTargetMet: boolean;
+
+  // Next milestone summary (for MetricsGrid card)
+  nextMilestone: {
+    label: string;
+    value: string;
+    sub: string;
+    color: ValueColor;
+    tooltip: string;
+  };
+
+  // "Months away" from key dates
+  monthsToDebtFree: number | null;
+  monthsToTargetReached: number | null;
+  monthsToLastSafe: number | null;
+  monthsToDepletion: number | null;
+
+  // Phase durations (in months)
+  savingPhaseEnd: Date | null;
+  savingPhaseDuration: number | null;
+  preDebtDuration: number | null;
+  postDebtDuration: number | null;
+  comfortableDuration: number | null;
+  cautionDuration: number | null;
+  criticalDuration: number | null;
+  consumptionDuration: number | null;
+  consumptionComfortableDuration: number | null;
+}
+
 export interface Transaction {
   date: string;
   description: string;

@@ -1,29 +1,14 @@
-import type { FinancialData, RunwayResult } from '../../types';
+import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
 import { formatCurrency } from '../../utils/formatting';
+import { getValueColor } from '../../utils/derived';
 
 interface DashStripProps {
   data: FinancialData;
   result: RunwayResult;
+  derived: DerivedMetrics;
 }
 
-type ValueColor = 'ok' | 'warn' | 'danger' | 'neutral';
-
-function getValueColor(type: ValueColor) {
-  switch (type) {
-    case 'ok': return 'var(--color-ok)';
-    case 'warn': return 'var(--color-warn)';
-    case 'danger': return 'var(--color-danger)';
-    default: return 'var(--color-text-primary)';
-  }
-}
-
-function getSurplusColor(monthlySavings: number): ValueColor {
-  if (monthlySavings > 500) return 'ok';
-  if (monthlySavings > 0) return 'warn';
-  return 'danger';
-}
-
-export function DashStrip({ data, result }: DashStripProps) {
+export function DashStrip({ data, result, derived }: DashStripProps) {
   return (
     <div className="dash-strip">
       <div className="dash-item">
@@ -54,8 +39,8 @@ export function DashStrip({ data, result }: DashStripProps) {
           <div className="dash-sep" />
           <div className="dash-item">
             <span className="dash-label">Savings rate</span>
-            <span className="dash-val" style={{ color: getValueColor(getSurplusColor(result.monthlySavings)) }}>
-              {Math.round((result.monthlySavings / data.monthlyIncome) * 100)}%
+            <span className="dash-val" style={{ color: getValueColor(derived.surplusColor) }}>
+              {derived.savingsRate}%
             </span>
           </div>
         </>

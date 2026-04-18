@@ -1,17 +1,18 @@
-import type { FinancialData, RunwayResult } from '../../types';
+import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
 import { Section } from '../ui';
 import { ProjectionSection, ProjectionChart } from '../projection';
 
 interface ProjectionTabProps {
   data: FinancialData;
   result: RunwayResult;
+  derived: DerivedMetrics;
   onChange: (data: FinancialData) => void;
 }
 
-export function ProjectionTab({ data, result, onChange }: ProjectionTabProps) {
+export function ProjectionTab({ data, result, derived, onChange }: ProjectionTabProps) {
   return (
     <>
-      <ProjectionSection result={result} data={data} />
+      <ProjectionSection result={result} data={data} derived={derived} />
       <ProjectionChart result={result} data={data} />
       <Section title="Phase thresholds">
         <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>

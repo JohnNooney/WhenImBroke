@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { FinancialData, RunwayResult } from '../../types';
+import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
 import { exportData, validateAndParseImport } from '../../utils/export';
 import { parseCSV, parseSnoopCSV, aggregateTransactions, filterLast30Days, detectBankFormat } from '../../utils/csvParser';
 import { Section } from '../ui';
@@ -9,13 +9,14 @@ import { ScenariosSection } from '../scenarios';
 interface OverviewTabProps {
   data: FinancialData;
   result: RunwayResult;
+  derived: DerivedMetrics;
   onChange: (data: FinancialData) => void;
   onTabChange: (tab: 'expenses') => void;
   importError: string | null;
   setImportError: (error: string | null) => void;
 }
 
-export function OverviewTab({ data, result, onChange, onTabChange, importError, setImportError }: OverviewTabProps) {
+export function OverviewTab({ data, result, derived, onChange, onTabChange, importError, setImportError }: OverviewTabProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,7 +111,7 @@ export function OverviewTab({ data, result, onChange, onTabChange, importError, 
         </div>
       </Section>
 
-      <ProjectionSection result={result} data={data} />
+      <ProjectionSection result={result} data={data} derived={derived} />
       <ScenariosSection data={data} onChange={onChange} />
     </>
   );

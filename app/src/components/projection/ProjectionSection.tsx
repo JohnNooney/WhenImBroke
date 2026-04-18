@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Target, AlertTriangle, Wallet, PiggyBank, TrendingUp } from 'lucide-react';
-import type { FinancialData, RunwayResult } from '../../types';
+import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatting';
 import { Section } from '../ui';
 import { InfoModal } from './InfoModal';
@@ -8,48 +8,11 @@ import { InfoModal } from './InfoModal';
 interface ProjectionSectionProps {
   result: RunwayResult;
   data: FinancialData;
+  derived: DerivedMetrics;
 }
 
-export function ProjectionSection({ result, data }: ProjectionSectionProps) {
+export function ProjectionSection({ result, data, derived }: ProjectionSectionProps) {
   const [showInfo, setShowInfo] = useState(false);
-  const today = new Date();
-  
-  // Calculate durations using proper month difference (inclusive of both start and end month)
-  const monthsBetween = (start: Date | null, end: Date | null) => {
-    if (!start || !end) return null;
-    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-    return Math.max(0, months);
-  };
-  
-  const monthsFromNow = (date: Date | null) => {
-    if (!date) return null;
-    const months = (date.getFullYear() - today.getFullYear()) * 12 + (date.getMonth() - today.getMonth()) + 1;
-    return Math.max(0, months);
-  };
-
-  // Phase durations - saving phase ends the month before consumption starts
-  const savingPhaseEnd = result.lastSafeDate ? new Date(result.lastSafeDate) : null;
-  if (savingPhaseEnd) savingPhaseEnd.setMonth(savingPhaseEnd.getMonth() - 1);
-  const savingPhaseDuration = monthsFromNow(savingPhaseEnd);
-  
-  // Saving phase sub-durations (use savingPhaseEnd as fallback, not lastSafeDate)
-  const preDebtDuration = result.phases.saving.preDebt.start
-    ? monthsBetween(result.phases.saving.preDebt.start, result.phases.saving.preDebt.end ?? savingPhaseEnd)
-    : null;
-  const postDebtDuration = result.phases.saving.postDebt.start
-    ? monthsBetween(result.phases.saving.postDebt.start, result.phases.saving.postDebt.end ?? savingPhaseEnd)
-    : null;
-  
-  const comfortableDuration = result.phases.comfortable.end 
-    ? monthsBetween(result.lastSafeDate, result.phases.comfortable.end)
-    : null;
-  const cautionDuration = monthsBetween(result.phases.caution.start, result.phases.caution.end);
-  const criticalDuration = monthsBetween(result.phases.critical.start, result.phases.critical.end);
-  
-  // Duration of consumption phase (lastSafeDate → depletionDate) - used for both phase breakdown and summary
-  const consumptionDuration = monthsBetween(result.lastSafeDate, result.depletionDate);
-  // Comfortable duration during consumption (fallback: all of consumption if no phase transition)
-  const consumptionComfortableDuration = comfortableDuration ?? consumptionDuration;
 
   return (
     <>
@@ -65,7 +28,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
           <div className="milestone-content">
             <div className="milestone-title">Today</div>
             <div className="milestone-detail">
-              {formatDate(today)} · Savings: {formatCurrency(data.currentSavings)} · Runway: {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
+              {formatDate(new Date())} · Savings: {formatCurrency(data.currentSavings)} · Runway: {result.runwayMonths === Infinity ? '∞' : `${result.runwayMonths} mo`}
             </div>
           </div>
         </div>
@@ -78,8 +41,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Debt-Free</div>
               <div className="milestone-detail">
                 {formatDate(result.debtFreeDate)}
-                {(monthsFromNow(result.debtFreeDate) ?? 0) > 0 && (
-                  <span className="badge" style={{ marginLeft: '8px' }}>{monthsFromNow(result.debtFreeDate)} mo away</span>
+                {(derived.monthsToDebtFree ?? 0) > 0 && (
+                  <span className="badge" style={{ marginLeft: '8px' }}>{derived.monthsToDebtFree} mo away</span>
                 )}
               </div>
               <div className="milestone-sub">Total debt: {formatCurrency(data.totalDebt)} at {formatCurrency(data.monthlyDebtRepayment)}/mo</div>
@@ -95,8 +58,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Target Savings Reached</div>
               <div className="milestone-detail">
                 {formatDate(result.targetReachedDate)}
-                {(monthsFromNow(result.targetReachedDate) ?? 0) > 0 && (
-                  <span className="badge" style={{ marginLeft: '8px' }}>{monthsFromNow(result.targetReachedDate)} mo away</span>
+                {(derived.monthsToTargetReached ?? 0) > 0 && (
+                  <span className="badge" style={{ marginLeft: '8px' }}>{derived.monthsToTargetReached} mo away</span>
                 )}
               </div>
               <div className="milestone-sub">Target: {formatCurrency(data.savingsTarget)} · Need: {formatCurrency(data.savingsTarget - data.currentSavings)}</div>
@@ -112,13 +75,13 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Ready for Consumption Mode</div>
               <div className="milestone-detail">
                 {formatDate(result.lastSafeDate)}
-                {(monthsFromNow(result.lastSafeDate) ?? 0) > 0 && (
-                  <span className="badge ok" style={{ marginLeft: '8px' }}>{monthsFromNow(result.lastSafeDate)} mo away</span>
+                {(derived.monthsToLastSafe ?? 0) > 0 && (
+                  <span className="badge ok" style={{ marginLeft: '8px' }}>{derived.monthsToLastSafe} mo away</span>
                 )}
               </div>
               <div className="milestone-sub">Target reached & debt-free · Peak savings: {formatCurrency(data.savingsTarget)}</div>
-              {consumptionDuration !== null && (
-                <div className="milestone-sub">Consumption runway: {consumptionDuration} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
+              {derived.consumptionDuration !== null && (
+                <div className="milestone-sub">Consumption runway: {derived.consumptionDuration} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
               )}
             </div>
           </div>
@@ -131,14 +94,14 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Savings Depleted</div>
               <div className="milestone-detail">
                 {formatDate(result.depletionDate)}
-                <span className="badge danger" style={{ marginLeft: '8px' }}>{monthsFromNow(result.depletionDate)} mo away</span>
+                <span className="badge danger" style={{ marginLeft: '8px' }}>{derived.monthsToDepletion} mo away</span>
               </div>
-              <div className="milestone-sub">Total runway from today: {monthsFromNow(result.depletionDate)} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
+              <div className="milestone-sub">Total runway from today: {derived.monthsToDepletion} months · Burn rate: {formatCurrency(result.livingExpenses)}/mo</div>
               <div className="milestone-sub">
                 {[
-                  consumptionComfortableDuration ? `Comfortable: ${consumptionComfortableDuration} mo` : null,
-                  cautionDuration ? `Caution: ${cautionDuration} mo` : null,
-                  criticalDuration ? `Critical: ${criticalDuration} mo` : null,
+                  derived.consumptionComfortableDuration ? `Comfortable: ${derived.consumptionComfortableDuration} mo` : null,
+                  derived.cautionDuration ? `Caution: ${derived.cautionDuration} mo` : null,
+                  derived.criticalDuration ? `Critical: ${derived.criticalDuration} mo` : null,
                 ].filter(Boolean).join(' · ')}
               </div>
             </div>
@@ -164,12 +127,12 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
         <div className="phase-block">
           <div className="phase-block-header">
             <span className="phase-block-title">Phase 1: Saving Mode</span>
-            {savingPhaseDuration !== null && savingPhaseDuration > 0 && (
-              <span className="phase-block-duration">{savingPhaseDuration} months</span>
+            {derived.savingPhaseDuration !== null && derived.savingPhaseDuration > 0 && (
+              <span className="phase-block-duration">{derived.savingPhaseDuration} months</span>
             )}
           </div>
           <div className="phase-block-details">
-            <div>Now → {savingPhaseEnd ? formatDate(savingPhaseEnd) : 'Ongoing'}</div>
+            <div>Now → {derived.savingPhaseEnd ? formatDate(derived.savingPhaseEnd) : 'Ongoing'}</div>
             <div className="phase-block-sub">Income covers expenses · Building savings</div>
           </div>
         </div>
@@ -180,8 +143,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
             <div className="phase-block-header">
               <span className="dot" style={{ background: 'var(--color-warn, #f59e0b)' }} />
               <span className="phase-block-title">Pre-Debt (Saving + Paying Debt)</span>
-              {preDebtDuration !== null && preDebtDuration > 0 && (
-                <span className="phase-block-duration">{preDebtDuration} months</span>
+              {derived.preDebtDuration !== null && derived.preDebtDuration > 0 && (
+                <span className="phase-block-duration">{derived.preDebtDuration} months</span>
               )}
             </div>
             <div className="phase-block-details">
@@ -209,8 +172,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
             <div className="phase-block-header">
               <span className="dot" style={{ background: 'var(--color-ok, #22c55e)' }} />
               <span className="phase-block-title">Post-Debt (Saving Only)</span>
-              {postDebtDuration !== null && postDebtDuration > 0 && (
-                <span className="phase-block-duration">{postDebtDuration} months</span>
+              {derived.postDebtDuration !== null && derived.postDebtDuration > 0 && (
+                <span className="phase-block-duration">{derived.postDebtDuration} months</span>
               )}
             </div>
             <div className="phase-block-details">
@@ -235,8 +198,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
             <div className="phase-block consumption-header">
               <div className="phase-block-header">
                 <span className="phase-block-title">Phase 2: Consumption Mode</span>
-                {consumptionDuration !== null && consumptionDuration > 0 && (
-                  <span className="phase-block-duration">{consumptionDuration} months</span>
+                {derived.consumptionDuration !== null && derived.consumptionDuration > 0 && (
+                  <span className="phase-block-duration">{derived.consumptionDuration} months</span>
                 )}
               </div>
               <div className="phase-block-details">
@@ -248,8 +211,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="phase-block-header">
                 <span className="dot" style={{ background: 'var(--color-ok)' }} />
                 <span className="phase-block-title">Comfortable</span>
-                {comfortableDuration !== null && (
-                  <span className="phase-block-duration">{comfortableDuration} months</span>
+                {derived.comfortableDuration !== null && (
+                  <span className="phase-block-duration">{derived.comfortableDuration} months</span>
                 )}
               </div>
               <div className="phase-block-details">
@@ -265,8 +228,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
                 <div className="phase-block-header">
                   <span className="dot" style={{ background: 'var(--color-warn)' }} />
                   <span className="phase-block-title">Caution</span>
-                  {cautionDuration !== null && (
-                    <span className="phase-block-duration">{cautionDuration} months</span>
+                  {derived.cautionDuration !== null && (
+                    <span className="phase-block-duration">{derived.cautionDuration} months</span>
                   )}
                 </div>
                 <div className="phase-block-details">
@@ -283,8 +246,8 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
                 <div className="phase-block-header">
                   <span className="dot" style={{ background: 'var(--color-danger)' }} />
                   <span className="phase-block-title">Critical</span>
-                  {criticalDuration !== null && (
-                    <span className="phase-block-duration">{criticalDuration} months</span>
+                  {derived.criticalDuration !== null && (
+                    <span className="phase-block-duration">{derived.criticalDuration} months</span>
                   )}
                 </div>
                 <div className="phase-block-details">
@@ -320,7 +283,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
         </div>
         <div className="summary-stat">
           <div className="summary-label">Consumption runway</div>
-          <div className="summary-value">{consumptionDuration === null ? '∞' : `${consumptionDuration} mo`}</div>
+          <div className="summary-value">{derived.consumptionDuration === null ? '∞' : `${derived.consumptionDuration} mo`}</div>
         </div>
         <div className="summary-stat">
           <div className="summary-label">Cost while saving</div>
