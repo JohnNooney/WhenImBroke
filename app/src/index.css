@@ -670,6 +670,35 @@
   border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
 }
 
+/* Breakdown table */
+.breakdown {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+
+.breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.breakdown-total {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.breakdown-result {
+  font-weight: 600;
+  font-size: 14px;
+}
+
 /* Projection Summary */
 .projection-summary {
   display: grid;
