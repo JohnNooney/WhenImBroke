@@ -78,7 +78,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Debt-Free</div>
               <div className="milestone-detail">
                 {formatDate(result.debtFreeDate)}
-                {monthsFromNow(result.debtFreeDate) > 0 && (
+                {(monthsFromNow(result.debtFreeDate) ?? 0) > 0 && (
                   <span className="badge" style={{ marginLeft: '8px' }}>{monthsFromNow(result.debtFreeDate)} mo away</span>
                 )}
               </div>
@@ -95,7 +95,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Target Savings Reached</div>
               <div className="milestone-detail">
                 {formatDate(result.targetReachedDate)}
-                {monthsFromNow(result.targetReachedDate) > 0 && (
+                {(monthsFromNow(result.targetReachedDate) ?? 0) > 0 && (
                   <span className="badge" style={{ marginLeft: '8px' }}>{monthsFromNow(result.targetReachedDate)} mo away</span>
                 )}
               </div>
@@ -112,7 +112,7 @@ export function ProjectionSection({ result, data }: ProjectionSectionProps) {
               <div className="milestone-title">Ready for Consumption Mode</div>
               <div className="milestone-detail">
                 {formatDate(result.lastSafeDate)}
-                {monthsFromNow(result.lastSafeDate) > 0 && (
+                {(monthsFromNow(result.lastSafeDate) ?? 0) > 0 && (
                   <span className="badge ok" style={{ marginLeft: '8px' }}>{monthsFromNow(result.lastSafeDate)} mo away</span>
                 )}
               </div>
