@@ -25,13 +25,22 @@ function getSurplusColor(monthlySavings: number): ValueColor {
 }
 
 export function MetricsGrid({ data, result }: MetricsGridProps) {
+  const today = new Date();
+  
+  // Consistent month calculation (inclusive of both start and end month)
+  const monthsFromNow = (date: Date | null) => {
+    if (!date) return 0;
+    const months = (date.getFullYear() - today.getFullYear()) * 12 + (date.getMonth() - today.getMonth()) + 1;
+    return Math.max(0, months);
+  };
+
   const nextMilestone = (() => {
     if (result.depletionDate) {
-      const moAway = Math.max(0, Math.ceil((result.depletionDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30.44)));
+      const moAway = monthsFromNow(result.depletionDate);
       return { label: 'Breaks', value: formatDate(result.depletionDate), sub: `${moAway} mo away`, color: 'danger' as const, tooltip: 'When savings will run out at current spending trajectory.' };
     }
     if (result.lastSafeDate) {
-      const moAway = Math.max(0, Math.ceil((result.lastSafeDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30.44)));
+      const moAway = monthsFromNow(result.lastSafeDate);
       return { label: 'Ready', value: formatDate(result.lastSafeDate), sub: moAway > 0 ? `${moAway} mo away` : 'Now', color: 'ok' as const, tooltip: 'Target reached & debt-free — safe to enter consumption mode.' };
     }
     return { label: 'Runway', value: '∞', sub: 'Sustainable', color: 'neutral' as const, tooltip: 'Savings will not deplete within the 20-year projection window.' };
