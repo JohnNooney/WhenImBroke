@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Shield, FolderGit2 } from 'lucide-react';
+import { Shield, FolderGit2, TriangleAlert } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
 import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
@@ -31,8 +31,14 @@ export function SavingsTracker({ data, onChange, isDefaultData }: Props) {
       {/* Example data banner */}
       {isDefaultData && (
         <div className="example-banner">
-          <span>You're viewing example data.</span>
-          <button className="btn" onClick={() => setActiveTab('mymoney')} style={{ padding: '4px 10px', fontSize: '12px' }}>
+          <div className="example-banner-copy">
+            <TriangleAlert size={25} />
+            <div>
+              <div className="example-banner-title">You&apos;re viewing example data</div>
+              <div className="example-banner-sub">Switch to My Money and enter your real numbers</div>
+            </div>
+          </div>
+          <button className="btn primary example-banner-btn" onClick={() => setActiveTab('mymoney')}>
             Enter your numbers
           </button>
         </div>

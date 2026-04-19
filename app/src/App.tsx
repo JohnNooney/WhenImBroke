@@ -23,8 +23,9 @@ const defaultData: FinancialData = {
 };
 
 function App() {
-  const [data, setData] = useState<FinancialData>(() => loadFromStorage() ?? defaultData);
-  const [isDefaultData, setIsDefaultData] = useState(() => !loadFromStorage());
+  const initialStoredData = loadFromStorage();
+  const [data, setData] = useState<FinancialData>(() => initialStoredData ?? defaultData);
+  const [isDefaultData, setIsDefaultData] = useState(() => !initialStoredData);
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('whenimbroke-theme') === 'dark' ||
@@ -34,9 +35,14 @@ function App() {
   });
 
   useEffect(() => {
+    if (isDefaultData) return;
     saveToStorage(data);
+  }, [data, isDefaultData]);
+
+  const handleDataChange = (nextData: FinancialData) => {
     if (isDefaultData) setIsDefaultData(false);
-  }, [data]);
+    setData(nextData);
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -60,7 +66,7 @@ function App() {
         </div>
       </header>
       <div style={{ padding: '0 1rem' }}>
-        <SavingsTracker data={data} onChange={setData} isDefaultData={isDefaultData} />
+        <SavingsTracker data={data} onChange={handleDataChange} isDefaultData={isDefaultData} />
       </div>
     </div>
   );
