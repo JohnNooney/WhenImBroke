@@ -161,22 +161,54 @@
 /* Dashboard secondary details strip */
 .dash-strip {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0;
-  padding: 0.55rem 0.85rem;
+  padding: 0;
   background: var(--color-background-primary);
   border: 0.5px solid var(--color-border-tertiary);
   border-radius: var(--border-radius-md);
   margin-bottom: 1rem;
   flex-wrap: wrap;
-  row-gap: 6px;
+}
+
+.dash-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.75rem 0.55rem;
+}
+
+.dash-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+}
+
+.dash-group-items {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.dash-group-sep {
+  width: 0.5px;
+  align-self: stretch;
+  background: var(--color-border-tertiary);
+  flex-shrink: 0;
 }
 
 .dash-item {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 0 0.6rem;
+  padding: 0 0.5rem;
 }
 
 .dash-label {
