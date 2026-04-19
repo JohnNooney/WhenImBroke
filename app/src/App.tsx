@@ -6,9 +6,9 @@ import { loadFromStorage, saveToStorage } from './utils/calculations';
 
 const defaultData: FinancialData = {
   currentSavings: 14200,
-  monthlyIncome: 1905,
-  monthlySavingsContribution: 200,
-  savingsTarget: 5000,
+  monthlyIncome: 3950,
+  monthlySavingsContribution: 500,
+  savingsTarget: 20000,
   rent: 950,
   utilities: 120,
   groceries: 220,
@@ -16,7 +16,7 @@ const defaultData: FinancialData = {
   transport: 80,
   pocketMoney: 150,
   totalDebt: 3800,
-  monthlyDebtRepayment: 0,
+  monthlyDebtRepayment: 500,
   comfortableThreshold: 12,
   cautionThreshold: 6,
   criticalThreshold: 3,
