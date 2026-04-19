@@ -7,7 +7,7 @@ import { Section } from '../ui';
 interface DataTabProps {
   data: FinancialData;
   onChange: (data: FinancialData) => void;
-  onTabChange: (tab: 'expenses') => void;
+  onTabChange: (tab: 'budget') => void;
   importError: string | null;
   setImportError: (error: string | null) => void;
 }
@@ -83,7 +83,7 @@ export function DataTab({ data, onChange, onTabChange, importError, setImportErr
           <button className="btn" onClick={() => jsonInputRef.current?.click()}>
             Import saved data
           </button>
-          <button className="btn primary" onClick={() => onTabChange('expenses')}>
+          <button className="btn primary" onClick={() => onTabChange('budget')}>
             Manual entry
           </button>
         </div>

@@ -2,12 +2,12 @@ import type { FinancialData } from '../../types';
 import { formatCurrency } from '../../utils/formatting';
 import { Section, InputField } from '../ui';
 
-interface ExpensesTabProps {
+interface BudgetTabProps {
   data: FinancialData;
   onChange: (data: FinancialData) => void;
 }
 
-export function ExpensesTab({ data, onChange }: ExpensesTabProps) {
+export function BudgetTab({ data, onChange }: BudgetTabProps) {
   const handleFieldChange = (field: keyof FinancialData) => (value: number) => {
     onChange({ ...data, [field]: value });
   };
@@ -19,6 +19,19 @@ export function ExpensesTab({ data, onChange }: ExpensesTabProps) {
 
   return (
     <>
+      {/* Income & Savings */}
+      <Section title="Income & savings">
+        <div className="row">
+          <InputField label="Monthly take-home" value={data.monthlyIncome} onChange={handleFieldChange('monthlyIncome')} />
+          <InputField label="Monthly savings contribution" value={data.monthlySavingsContribution} onChange={handleFieldChange('monthlySavingsContribution')} />
+          <InputField label="Current savings" value={data.currentSavings} onChange={handleFieldChange('currentSavings')} />
+        </div>
+        <div className="row">
+          <InputField label="Savings target" value={data.savingsTarget} onChange={handleFieldChange('savingsTarget')} />
+        </div>
+      </Section>
+
+      {/* Expenses */}
       <Section title="Monthly expenses">
         <div className="row">
           <InputField label="Rent / mortgage" value={data.rent} onChange={handleFieldChange('rent')} />
@@ -32,6 +45,22 @@ export function ExpensesTab({ data, onChange }: ExpensesTabProps) {
         </div>
       </Section>
 
+      {/* Debt */}
+      <Section title="Debt overview">
+        <div className="row">
+          <InputField label="Total outstanding debt" value={data.totalDebt} onChange={handleFieldChange('totalDebt')} />
+          <InputField label="Monthly debt repayment" value={data.monthlyDebtRepayment} onChange={handleFieldChange('monthlyDebtRepayment')} />
+        </div>
+        {data.totalDebt > 0 && data.monthlyDebtRepayment > 0 && (
+          <div style={{ marginTop: '12px', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+            At current rate, debt-free in <strong style={{ color: 'var(--color-text-primary)' }}>
+              {Math.ceil(data.totalDebt / data.monthlyDebtRepayment)} months
+            </strong>
+          </div>
+        )}
+      </Section>
+
+      {/* Breakdown */}
       <Section title="Monthly breakdown">
         <div className="breakdown">
           <div className="breakdown-row">

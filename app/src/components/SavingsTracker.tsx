@@ -3,21 +3,19 @@ import { Shield } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
 import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
-import { OverviewTab, DataTab, ExpensesTab, IncomeTab, DebtsTab, ProjectionTab } from './tabs';
+import { OverviewTab, DataTab, BudgetTab, ProjectionTab } from './tabs';
 
 interface Props {
   data: FinancialData;
   onChange: (data: FinancialData) => void;
 }
 
-type Tab = 'overview' | 'data' | 'expenses' | 'income' | 'debts' | 'projection';
+type Tab = 'overview' | 'data' | 'budget' | 'projection';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'data', label: 'Data' },
-  { id: 'income', label: 'Income' },
-  { id: 'expenses', label: 'Expenses' },
-  { id: 'debts', label: 'Debts' },
+  { id: 'budget', label: 'Budget' },
   { id: 'projection', label: 'Projection' },
 ];
 
@@ -60,16 +58,8 @@ export function SavingsTracker({ data, onChange }: Props) {
         />
       )}
 
-      {activeTab === 'expenses' && (
-        <ExpensesTab data={data} onChange={onChange} />
-      )}
-
-      {activeTab === 'income' && (
-        <IncomeTab data={data} onChange={onChange} />
-      )}
-
-      {activeTab === 'debts' && (
-        <DebtsTab data={data} onChange={onChange} />
+      {activeTab === 'budget' && (
+        <BudgetTab data={data} onChange={onChange} />
       )}
 
       {activeTab === 'projection' && (

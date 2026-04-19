@@ -2,7 +2,7 @@ import { TrendingUp, BarChart3, Zap, Upload, Shield } from 'lucide-react';
 import { Section } from '../ui';
 
 interface OverviewTabProps {
-  onTabChange: (tab: 'data' | 'expenses') => void;
+  onTabChange: (tab: 'data' | 'budget') => void;
 }
 
 export function OverviewTab({ onTabChange }: OverviewTabProps) {
@@ -20,7 +20,7 @@ export function OverviewTab({ onTabChange }: OverviewTabProps) {
           <button className="btn primary" onClick={() => onTabChange('data')}>
             Import Data →
           </button>
-          <button className="btn" onClick={() => onTabChange('expenses')}>
+          <button className="btn" onClick={() => onTabChange('budget')}>
             Manual Entry →
           </button>
         </div>
