@@ -3,24 +3,24 @@ import { Shield } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
 import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
-import { OverviewTab, DataTab, BudgetTab, ProjectionTab } from './tabs';
+import { OverviewTab, MyMoneyTab, ProjectionTab } from './tabs';
 
 interface Props {
   data: FinancialData;
   onChange: (data: FinancialData) => void;
+  isDefaultData: boolean;
 }
 
-type Tab = 'overview' | 'data' | 'budget' | 'projection';
+type Tab = 'dashboard' | 'mymoney' | 'projection';
 
 const tabs: { id: Tab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'data', label: 'Data' },
-  { id: 'budget', label: 'Budget' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'mymoney', label: 'My Money' },
   { id: 'projection', label: 'Projection' },
 ];
 
-export function SavingsTracker({ data, onChange }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+export function SavingsTracker({ data, onChange, isDefaultData }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [importError, setImportError] = useState<string | null>(null);
 
   const result = useMemo(() => calculateRunway(data), [data]);
@@ -28,6 +28,16 @@ export function SavingsTracker({ data, onChange }: Props) {
 
   return (
     <div className="wrap">
+      {/* Example data banner */}
+      {isDefaultData && (
+        <div className="example-banner">
+          <span>You're viewing example data.</span>
+          <button className="btn" onClick={() => setActiveTab('mymoney')} style={{ padding: '4px 10px', fontSize: '12px' }}>
+            Enter your numbers
+          </button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="tab-row">
         {tabs.map((tab) => (
@@ -42,37 +52,32 @@ export function SavingsTracker({ data, onChange }: Props) {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'overview' && (
+      {activeTab === 'dashboard' && (
         <OverviewTab
+          data={data}
+          result={result}
+          derived={derived}
           onTabChange={setActiveTab}
         />
       )}
 
-      {activeTab === 'data' && (
-        <DataTab
+      {activeTab === 'mymoney' && (
+        <MyMoneyTab
           data={data}
           onChange={onChange}
-          onTabChange={setActiveTab}
           importError={importError}
           setImportError={setImportError}
         />
-      )}
-
-      {activeTab === 'budget' && (
-        <BudgetTab data={data} onChange={onChange} />
       )}
 
       {activeTab === 'projection' && (
         <ProjectionTab data={data} result={result} derived={derived} onChange={onChange} />
       )}
 
-      
-      {activeTab !== 'overview' && (
-        <div className="privacy-notice">
-          <Shield size={12} style={{ flexShrink: 0 }} />
-          <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
-        </div>
-      )}
+      <div className="privacy-notice">
+        <Shield size={12} style={{ flexShrink: 0 }} />
+        <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
+      </div>
     </div>
   );
 }

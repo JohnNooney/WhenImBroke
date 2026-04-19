@@ -1,88 +1,133 @@
-import { TrendingUp, BarChart3, Zap, Upload, Shield } from 'lucide-react';
+import { Wallet, TrendingDown, PiggyBank, Clock, ArrowRight } from 'lucide-react';
+import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
+import { formatCurrency, formatDate } from '../../utils/formatting';
 import { Section } from '../ui';
 
 interface OverviewTabProps {
-  onTabChange: (tab: 'data' | 'budget') => void;
+  data: FinancialData;
+  result: RunwayResult;
+  derived: DerivedMetrics;
+  onTabChange: (tab: 'dashboard' | 'mymoney' | 'projection') => void;
 }
 
-export function OverviewTab({ onTabChange }: OverviewTabProps) {
+export function OverviewTab({ data, result, derived, onTabChange }: OverviewTabProps) {
+  const runwayText = result.runwayMonths === Infinity
+    ? 'Sustainable'
+    : `${result.runwayMonths} months`;
+
+  const runwayColor = result.runwayMonths === Infinity
+    ? 'var(--color-ok)'
+    : result.runwayMonths > data.cautionThreshold
+      ? 'var(--color-ok)'
+      : result.runwayMonths > data.criticalThreshold
+        ? 'var(--color-warn)'
+        : 'var(--color-danger)';
+
+  const depletionText = result.depletionDate
+    ? formatDate(result.depletionDate)
+    : 'Not within 20 years';
+
+  const livingExpenses = data.rent + data.utilities + data.groceries +
+    data.subscriptions + data.transport + data.pocketMoney;
+  const surplus = data.monthlyIncome - livingExpenses - data.monthlyDebtRepayment - data.monthlySavingsContribution;
 
   return (
     <>
-      {/* Hero */}
-      <div className="landing-hero">
-        <span className="landing-hero-emoji">💸</span>
-        <h1 className="landing-hero-title">Know exactly when you're broke</h1>
-        <p className="landing-hero-sub">
-          WhenImBroke projects your savings runway month-by-month — so you can see how long your money lasts, when to worry, and what to change.
-        </p>
-        <div className="landing-hero-ctas">
-          <button className="btn primary" onClick={() => onTabChange('data')}>
-            Import Data →
-          </button>
-          <button className="btn" onClick={() => onTabChange('budget')}>
-            Manual Entry →
-          </button>
+      {/* Hero summary */}
+      <div className="dashboard-hero">
+        <div className="dashboard-hero-label">Current runway</div>
+        <div className="dashboard-hero-value" style={{ color: runwayColor }}>
+          {runwayText}
+        </div>
+        {result.depletionDate && (
+          <div className="dashboard-hero-sub">
+            Money runs out {depletionText}
+          </div>
+        )}
+        {!result.depletionDate && (
+          <div className="dashboard-hero-sub">
+            Income covers expenses indefinitely
+          </div>
+        )}
+      </div>
+
+      {/* Key metrics grid */}
+      <div className="dashboard-grid">
+        <div className="dashboard-card">
+          <div className="dashboard-card-icon"><Wallet size={18} /></div>
+          <div className="dashboard-card-label">Savings</div>
+          <div className="dashboard-card-value">{formatCurrency(data.currentSavings)}</div>
+          {data.savingsTarget > 0 && (
+            <div className="dashboard-card-sub">
+              {data.currentSavings >= data.savingsTarget ? 'Target reached' : `${formatCurrency(data.savingsTarget - data.currentSavings)} to target`}
+            </div>
+          )}
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-card-icon"><TrendingDown size={18} /></div>
+          <div className="dashboard-card-label">Monthly burn</div>
+          <div className="dashboard-card-value">{formatCurrency(livingExpenses)}</div>
+          <div className="dashboard-card-sub">Living expenses only</div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-card-icon"><PiggyBank size={18} /></div>
+          <div className="dashboard-card-label">Monthly surplus</div>
+          <div className="dashboard-card-value" style={{ color: surplus >= 0 ? 'var(--color-ok)' : 'var(--color-danger)' }}>
+            {surplus >= 0 ? '+' : ''}{formatCurrency(surplus)}
+          </div>
+          <div className="dashboard-card-sub">After all commitments</div>
+        </div>
+
+        <div className="dashboard-card">
+          <div className="dashboard-card-icon"><Clock size={18} /></div>
+          <div className="dashboard-card-label">Next milestone</div>
+          <div className="dashboard-card-value" style={{ fontSize: '16px' }}>{derived.nextMilestone.label}</div>
+          <div className="dashboard-card-sub">{derived.nextMilestone.sub}</div>
         </div>
       </div>
 
-      {/* Features */}
-      <div className="landing-features">
-        <div className="landing-feature-card">
-          <div className="landing-feature-icon"><TrendingUp size={22} /></div>
-          <div className="landing-feature-title">Runway Projection</div>
-          <div className="landing-feature-desc">See how many months your savings will last with a detailed timeline of saving and consumption phases.</div>
-        </div>
-        <div className="landing-feature-card">
-          <div className="landing-feature-icon"><BarChart3 size={22} /></div>
-          <div className="landing-feature-title">Phase Tracking</div>
-          <div className="landing-feature-desc">Track your journey through comfortable, caution and critical phases — with dates and durations for each.</div>
-        </div>
-        <div className="landing-feature-card">
-          <div className="landing-feature-icon"><Zap size={22} /></div>
-          <div className="landing-feature-title">What-If Scenarios</div>
-          <div className="landing-feature-desc">Instantly see how cutting expenses, paying off debt faster, or adding side income changes your outlook.</div>
-        </div>
-        <div className="landing-feature-card">
-          <div className="landing-feature-icon"><Upload size={22} /></div>
-          <div className="landing-feature-title">Bank CSV Import</div>
-          <div className="landing-feature-desc">Upload a bank export from Monzo, Starling, Lloyds, HSBC, or Snoop and auto-fill your expenses.</div>
-        </div>
-      </div>
-
-      {/* How it works */}
-      <Section title="How it works">
-        <div className="landing-steps">
-          <div className="landing-step">
-            <div className="landing-step-num">1</div>
-            <div className="landing-step-body">
-              <div className="landing-step-title">Add your numbers</div>
-              <div className="landing-step-desc">Import a bank CSV, load saved data, or enter income, expenses, savings and debt manually.</div>
+      {/* Quick status */}
+      <Section title="Status at a glance">
+        <div className="status-list">
+          {data.totalDebt > 0 && (
+            <div className="status-row">
+              <span className="status-dot" style={{ background: result.debtFreeDate ? 'var(--color-warn)' : 'var(--color-danger)' }} />
+              <span>Debt: {formatCurrency(data.totalDebt)} remaining</span>
+              {result.debtFreeDate && (
+                <span className="status-meta">Clear by {formatDate(result.debtFreeDate)}</span>
+              )}
             </div>
+          )}
+          {data.totalDebt === 0 && (
+            <div className="status-row">
+              <span className="status-dot" style={{ background: 'var(--color-ok)' }} />
+              <span>No debt</span>
+            </div>
+          )}
+          <div className="status-row">
+            <span className="status-dot" style={{ background: data.currentSavings >= data.savingsTarget ? 'var(--color-ok)' : 'var(--color-warn)' }} />
+            <span>Savings target: {data.currentSavings >= data.savingsTarget ? 'Reached' : `${Math.round((data.currentSavings / data.savingsTarget) * 100)}% complete`}</span>
+            {result.targetReachedDate && data.currentSavings < data.savingsTarget && (
+              <span className="status-meta">Reached by {formatDate(result.targetReachedDate)}</span>
+            )}
           </div>
-          <div className="landing-step">
-            <div className="landing-step-num">2</div>
-            <div className="landing-step-body">
-              <div className="landing-step-title">Set your targets</div>
-              <div className="landing-step-desc">Choose a savings goal and configure phase thresholds that match your comfort level.</div>
-            </div>
-          </div>
-          <div className="landing-step">
-            <div className="landing-step-num">3</div>
-            <div className="landing-step-body">
-              <div className="landing-step-title">See the projection</div>
-              <div className="landing-step-desc">Get a month-by-month breakdown of when you hit each milestone — and when the money runs out.</div>
-            </div>
+          <div className="status-row">
+            <span className="status-dot" style={{ background: surplus >= 0 ? 'var(--color-ok)' : 'var(--color-danger)' }} />
+            <span>{surplus >= 0 ? 'Income covers all expenses' : 'Spending exceeds income'}</span>
           </div>
         </div>
       </Section>
 
-      {/* Privacy callout */}
-      <div className="landing-privacy">
-        <Shield size={16} />
-        <div>
-          <strong>100% private.</strong> All data stored locally in your browser. Nothing sent to any server — ever.
-        </div>
+      {/* Quick actions */}
+      <div className="dashboard-actions">
+        <button className="dashboard-action-btn" onClick={() => onTabChange('mymoney')}>
+          Update your numbers <ArrowRight size={14} />
+        </button>
+        <button className="dashboard-action-btn" onClick={() => onTabChange('projection')}>
+          View full projection <ArrowRight size={14} />
+        </button>
       </div>
     </>
   );

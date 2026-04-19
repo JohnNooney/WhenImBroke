@@ -48,18 +48,33 @@ export function deriveMetrics(data: FinancialData, result: RunwayResult): Derive
   const monthsToLastSafe = monthsFromNow(result.lastSafeDate);
   const monthsToDepletion = monthsFromNow(result.depletionDate);
 
-  // Next milestone (MetricsGrid card)
-  const nextMilestone = (() => {
-    if (result.depletionDate) {
-      const moAway = monthsToDepletion ?? 0;
-      return { label: 'Breaks', value: formatDate(result.depletionDate), sub: `${moAway} mo away`, color: 'danger' as ValueColor, tooltip: 'When savings will run out at current spending trajectory.' };
-    }
-    if (result.lastSafeDate) {
-      const moAway = monthsToLastSafe ?? 0;
-      return { label: 'Ready', value: formatDate(result.lastSafeDate), sub: moAway > 0 ? `${moAway} mo away` : 'Now', color: 'ok' as ValueColor, tooltip: 'Target reached & debt-free — safe to enter consumption mode.' };
-    }
-    return { label: 'Runway', value: '∞', sub: 'Sustainable', color: 'neutral' as ValueColor, tooltip: 'Savings will not deplete within the 20-year projection window.' };
-  })();
+  // Next milestone — pick the soonest future date from all milestones
+  const now = new Date();
+  type Milestone = { label: string; value: string; sub: string; color: ValueColor; tooltip: string; date: Date };
+  const candidates: Milestone[] = [];
+
+  if (result.debtFreeDate && result.debtFreeDate > now && data.totalDebt > 0) {
+    const mo = monthsToDebtFree ?? 0;
+    candidates.push({ date: result.debtFreeDate, label: 'Debt-free', value: formatDate(result.debtFreeDate), sub: mo > 0 ? `${mo} mo away` : 'Now', color: 'warn', tooltip: 'When all debt will be paid off.' });
+  }
+  if (result.targetReachedDate && result.targetReachedDate > now && data.currentSavings < data.savingsTarget) {
+    const mo = monthsToTargetReached ?? 0;
+    candidates.push({ date: result.targetReachedDate, label: 'Target hit', value: formatDate(result.targetReachedDate), sub: mo > 0 ? `${mo} mo away` : 'Now', color: 'ok', tooltip: 'When savings reach your target.' });
+  }
+  if (result.lastSafeDate && result.lastSafeDate > now) {
+    const mo = monthsToLastSafe ?? 0;
+    candidates.push({ date: result.lastSafeDate, label: 'Ready', value: formatDate(result.lastSafeDate), sub: mo > 0 ? `${mo} mo away` : 'Now', color: 'ok', tooltip: 'Target reached & debt-free — ready to live off savings.' });
+  }
+  if (result.depletionDate) {
+    const mo = monthsToDepletion ?? 0;
+    candidates.push({ date: result.depletionDate, label: 'Breaks', value: formatDate(result.depletionDate), sub: `${mo} mo away`, color: 'danger', tooltip: 'When savings will run out at current spending.' });
+  }
+
+  candidates.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  const nextMilestone: DerivedMetrics['nextMilestone'] = candidates.length > 0
+    ? { label: candidates[0].label, value: candidates[0].value, sub: candidates[0].sub, color: candidates[0].color, tooltip: candidates[0].tooltip }
+    : { label: 'Runway', value: '∞', sub: 'Sustainable', color: 'neutral', tooltip: 'Savings will not deplete within the 20-year projection window.' };
 
   // Phase durations
   const savingPhaseEnd = result.lastSafeDate ? new Date(result.lastSafeDate) : null;

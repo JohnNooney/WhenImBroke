@@ -172,10 +172,11 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
           background: 'var(--color-background-secondary)',
           borderRadius: 'var(--border-radius-md)',
           fontSize: '13px',
+          color: 'var(--color-text-secondary)',
           border: '0.5px solid var(--color-border-tertiary)',
         }}>
-          <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '12px' }}>
+          <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--color-text-primary)' }}>
+            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
               {formatDate(selected.date)} · Month {selected.month + 1} ·{' '}
               <span style={{ color: selected.mode === 'saving' ? 'var(--color-ok)' : 'var(--color-warn)' }}>
                 {selected.mode === 'saving' ? 'Saving' : 'Consumption'}
@@ -187,13 +188,13 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
             >×</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-            <div>Balance <strong>{formatCurrency(selected.savingsBalance)}</strong></div>
+            <div>Balance <strong style={{ color: 'var(--color-text-primary)' }}>{formatCurrency(selected.savingsBalance)}</strong></div>
             <div>Phase <strong style={{ color: phaseColor(selected.phase) }}>{selected.phase}</strong></div>
             {selected.income > 0 && <div>Income <span style={{ color: 'var(--color-ok)' }}>+{formatCurrency(selected.income)}</span></div>}
             <div>Expenses <span style={{ color: 'var(--color-danger)' }}>−{formatCurrency(selected.expenses)}</span></div>
             {selected.debtPaid > 0 && <div>Debt paid <span style={{ color: 'var(--color-warn)' }}>−{formatCurrency(selected.debtPaid)}</span></div>}
             {selected.remainingDebt > 0 && <div>Debt left <span style={{ color: 'var(--color-danger)' }}>{formatCurrency(selected.remainingDebt)}</span></div>}
-            <div>Net <strong style={{ color: selected.netChange >= 0 ? 'var(--color-ok)' : 'var(--color-danger)' }}>{selected.netChange >= 0 ? '+' : ''}{formatCurrency(selected.netChange)}</strong></div>
+            <div style={{ color: 'var(--color-text-secondary)' }}>Net <strong style={{ color: selected.netChange >= 0 ? 'var(--color-ok)' : 'var(--color-danger)' }}>{selected.netChange >= 0 ? '+' : ''}{formatCurrency(selected.netChange)}</strong></div>
           </div>
         </div>
       )}

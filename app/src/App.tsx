@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import type { FinancialData } from './types';
 import { SavingsTracker } from './components/SavingsTracker';
 import { loadFromStorage, saveToStorage } from './utils/calculations';
@@ -23,10 +24,24 @@ const defaultData: FinancialData = {
 
 function App() {
   const [data, setData] = useState<FinancialData>(() => loadFromStorage() ?? defaultData);
+  const [isDefaultData, setIsDefaultData] = useState(() => !loadFromStorage());
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('whenimbroke-theme') === 'dark' ||
+        (!localStorage.getItem('whenimbroke-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
 
   useEffect(() => {
     saveToStorage(data);
+    if (isDefaultData) setIsDefaultData(false);
   }, [data]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    localStorage.setItem('whenimbroke-theme', dark ? 'dark' : 'light');
+  }, [dark]);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background-secondary)' }}>
@@ -35,10 +50,17 @@ function App() {
           <span style={{ fontSize: '18px', lineHeight: 1 }}>💸</span>
           <span className="app-name">WhenImBroke</span>
           <span className="app-tagline">savings runway tracker</span>
+          <button
+            className="theme-toggle"
+            onClick={() => setDark(d => !d)}
+            aria-label="Toggle dark mode"
+          >
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
         </div>
       </header>
       <div style={{ padding: '0 1rem' }}>
-        <SavingsTracker data={data} onChange={setData} />
+        <SavingsTracker data={data} onChange={setData} isDefaultData={isDefaultData} />
       </div>
     </div>
   );
