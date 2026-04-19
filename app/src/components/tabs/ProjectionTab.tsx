@@ -1,6 +1,7 @@
 import type { FinancialData, RunwayResult, DerivedMetrics } from '../../types';
 import { Section } from '../ui';
 import { ProjectionSection, ProjectionChart } from '../projection';
+import { ScenariosSection } from '../scenarios';
 
 interface ProjectionTabProps {
   data: FinancialData;
@@ -14,6 +15,7 @@ export function ProjectionTab({ data, result, derived, onChange }: ProjectionTab
     <>
       <ProjectionSection result={result} data={data} derived={derived} />
       <ProjectionChart result={result} data={data} />
+      <ScenariosSection data={data} onChange={onChange} />
       <Section title="Phase thresholds">
         <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
           Set how many months of runway define each phase

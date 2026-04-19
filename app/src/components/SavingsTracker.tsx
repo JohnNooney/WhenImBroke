@@ -3,20 +3,20 @@ import { Shield } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
 import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
-import { MetricsGrid, DashStrip } from './metrics';
-import { OverviewTab, ExpensesTab, IncomeTab, DebtsTab, ProjectionTab } from './tabs';
+import { OverviewTab, DataTab, ExpensesTab, IncomeTab, DebtsTab, ProjectionTab } from './tabs';
 
 interface Props {
   data: FinancialData;
   onChange: (data: FinancialData) => void;
 }
 
-type Tab = 'overview' | 'expenses' | 'income' | 'debts' | 'projection';
+type Tab = 'overview' | 'data' | 'expenses' | 'income' | 'debts' | 'projection';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'expenses', label: 'Expenses' },
+  { id: 'data', label: 'Data' },
   { id: 'income', label: 'Income' },
+  { id: 'expenses', label: 'Expenses' },
   { id: 'debts', label: 'Debts' },
   { id: 'projection', label: 'Projection' },
 ];
@@ -43,18 +43,16 @@ export function SavingsTracker({ data, onChange }: Props) {
         ))}
       </div>
 
-      {/* Primary Stats */}
-      <MetricsGrid data={data} result={result} derived={derived} />
-
-      {/* Supporting Details */}
-      <DashStrip data={data} result={result} derived={derived} />
-
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <OverviewTab
+          onTabChange={setActiveTab}
+        />
+      )}
+
+      {activeTab === 'data' && (
+        <DataTab
           data={data}
-          result={result}
-          derived={derived}
           onChange={onChange}
           onTabChange={setActiveTab}
           importError={importError}
@@ -78,10 +76,13 @@ export function SavingsTracker({ data, onChange }: Props) {
         <ProjectionTab data={data} result={result} derived={derived} onChange={onChange} />
       )}
 
-      <div className="privacy-notice">
-        <Shield size={12} style={{ flexShrink: 0 }} />
-        <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
-      </div>
+      
+      {activeTab !== 'overview' && (
+        <div className="privacy-notice">
+          <Shield size={12} style={{ flexShrink: 0 }} />
+          <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
+        </div>
+      )}
     </div>
   );
 }
