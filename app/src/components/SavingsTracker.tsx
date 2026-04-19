@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, FolderGit2 } from 'lucide-react';
 import type { FinancialData } from '../types';
 import { calculateRunway } from '../utils/calculations';
 import { useDerivedMetrics } from '../hooks/useDerivedMetrics';
@@ -77,6 +77,16 @@ export function SavingsTracker({ data, onChange, isDefaultData }: Props) {
       <div className="privacy-notice">
         <Shield size={12} style={{ flexShrink: 0 }} />
         <span>All data is stored locally in your browser. Nothing is sent to any server.</span>
+        <span className="footer-separator">|</span>
+        <a
+          href="https://github.com/JohnNooney/WhenImBroke"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="source-link"
+        >
+          <FolderGit2 size={12} style={{ flexShrink: 0 }} />
+          <span>View source on GitHub</span>
+        </a>
       </div>
     </div>
   );

@@ -68,6 +68,24 @@
   margin-top: 0.5rem;
 }
 
+.footer-separator {
+  margin: 0 0.25rem;
+  opacity: 0.5;
+}
+
+.source-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.source-link:hover {
+  color: var(--color-accent);
+}
+
 /* Tracker Styles */
 .wrap {
   padding: 1.5rem 0;
