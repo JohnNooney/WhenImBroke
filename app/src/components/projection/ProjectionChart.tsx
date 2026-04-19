@@ -39,12 +39,36 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
   const debtFreeIdx = findMilestoneIdx(result.debtFreeDate);
   const lastSafeIdx = findMilestoneIdx(result.lastSafeDate);
   const shownDeplIdx = deplIdx >= 0 && deplIdx < displayCount ? deplIdx : -1;
+  const targetReachedIdx = findMilestoneIdx(result.targetReachedDate);
 
-  // Don't show debtFree marker if it's the same month as lastSafe
-  const showDebtFree = debtFreeIdx >= 0 && debtFreeIdx !== lastSafeIdx;
+  const showDebtFree = debtFreeIdx >= 0 && data.totalDebt > 0;
+  const showTargetReached = targetReachedIdx >= 0 && data.savingsTarget > 0 && data.currentSavings < data.savingsTarget;
 
   const markerLeft = (idx: number) =>
     `${((idx + 0.5) / projections.length) * 100}%`;
+
+  // Collect visible milestones and compute label stacking
+  const milestones: Array<{ idx: number; label: string; color: string; labelTop: number }> = [];
+  if (showDebtFree) milestones.push({ idx: debtFreeIdx, label: 'debt-free', color: 'var(--color-warn)', labelTop: 2 });
+  if (showTargetReached) milestones.push({ idx: targetReachedIdx, label: 'target', color: 'var(--color-ok)', labelTop: 2 });
+  if (lastSafeIdx >= 0) milestones.push({ idx: lastSafeIdx, label: 'ready', color: 'var(--color-ok)', labelTop: 2 });
+  if (shownDeplIdx >= 0) milestones.push({ idx: shownDeplIdx, label: 'broke', color: 'var(--color-danger)', labelTop: 2 });
+  milestones.sort((a, b) => a.idx - b.idx);
+  const LABEL_H = 14;
+  const CLOSE_IDX = 3;
+  for (let i = 1; i < milestones.length; i++) {
+    for (let j = i - 1; j >= 0; j--) {
+      if (Math.abs(milestones[i].idx - milestones[j].idx) <= CLOSE_IDX) {
+        milestones[i].labelTop = Math.max(milestones[i].labelTop, milestones[j].labelTop + LABEL_H);
+      }
+    }
+  }
+  // Extra gap so the lowest label clears the tallest bar
+  const BAR_GAP = 8;
+  const labelStackHeight = milestones.length > 0
+    ? Math.max(...milestones.map(m => m.labelTop)) + 12
+    : 0;
+  const milestoneExt = labelStackHeight + BAR_GAP;
 
   // Savings target line height (% from bottom)
   const targetLinePct = data.savingsTarget > 0
@@ -55,15 +79,13 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
     <Section title="Savings over time">
       {/* Y-axis reference */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
-        <span>{formatCurrency(effectiveMax)}</span>
-        {targetLinePct !== null && (
-          <span style={{ color: 'var(--color-ok)' }}>Target {formatCurrency(data.savingsTarget)}</span>
-        )}
+        <span>Maximum: {formatCurrency(effectiveMax)}</span>
+        
         <span>£0</span>
       </div>
 
       {/* Chart area */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '120px', position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '120px', position: 'relative', overflow: 'visible', marginTop: milestoneExt > 0 ? milestoneExt : undefined }}>
 
         {/* Savings target horizontal line */}
         {targetLinePct !== null && (
@@ -73,51 +95,36 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
             borderTop: '1px dashed var(--color-ok)',
             opacity: 0.45,
             pointerEvents: 'none',
-            zIndex: 1,
+            zIndex: 3,
           }} />
         )}
 
-        {/* Milestone: debt-free */}
-        {showDebtFree && (
-          <div style={{
-            position: 'absolute', top: 0, bottom: 0,
-            left: markerLeft(debtFreeIdx),
-            borderLeft: '1px dashed var(--color-warn)',
-            opacity: 0.7,
-            pointerEvents: 'none',
-            zIndex: 3,
-          }}>
-            <span style={{ position: 'absolute', top: 2, left: 4, fontSize: '10px', color: 'var(--color-warn)', whiteSpace: 'nowrap', lineHeight: 1 }}>debt-free</span>
-          </div>
-        )}
-
-        {/* Milestone: ready (consumption mode) */}
-        {lastSafeIdx >= 0 && (
-          <div style={{
-            position: 'absolute', top: 0, bottom: 0,
-            left: markerLeft(lastSafeIdx),
-            borderLeft: '1px dashed var(--color-ok)',
-            opacity: 0.7,
-            pointerEvents: 'none',
-            zIndex: 3,
-          }}>
-            <span style={{ position: 'absolute', top: showDebtFree && Math.abs(lastSafeIdx - debtFreeIdx) < 4 ? 14 : 2, left: 4, fontSize: '10px', color: 'var(--color-ok)', whiteSpace: 'nowrap', lineHeight: 1 }}>ready</span>
-          </div>
-        )}
-
-        {/* Milestone: depleted */}
-        {shownDeplIdx >= 0 && (
-          <div style={{
-            position: 'absolute', top: 0, bottom: 0,
-            left: markerLeft(shownDeplIdx),
-            borderLeft: '1px dashed var(--color-danger)',
-            opacity: 0.7,
-            pointerEvents: 'none',
-            zIndex: 3,
-          }}>
-            <span style={{ position: 'absolute', top: 2, right: 4, left: 'auto', fontSize: '10px', color: 'var(--color-danger)', whiteSpace: 'nowrap', lineHeight: 1 }}>broke</span>
-          </div>
-        )}
+        {/* Milestone vertical lines */}
+        {milestones.map((m, i) => {
+          const anchorRight = m.idx > projections.length * 0.7;
+          return (
+            <div key={i} style={{
+              position: 'absolute',
+              top: `-${milestoneExt}px`,
+              bottom: 0,
+              left: markerLeft(m.idx),
+              borderLeft: `1px dashed ${m.color}`,
+              opacity: 0.7,
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}>
+              <span style={{
+                position: 'absolute',
+                top: m.labelTop,
+                ...(anchorRight ? { right: 4, left: 'auto' } : { left: 4 }),
+                fontSize: '10px',
+                color: m.color,
+                whiteSpace: 'nowrap',
+                lineHeight: 1,
+              }}>{m.label}</span>
+            </div>
+          );
+        })}
 
         {/* Bars */}
         {projections.map((p, i) => {
