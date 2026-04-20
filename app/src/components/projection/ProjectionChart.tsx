@@ -54,10 +54,11 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
   if (shownDeplIdx >= 0) milestones.push({ idx: shownDeplIdx, label: 'broke', color: 'var(--color-danger)', labelTop: 2 });
   milestones.sort((a, b) => a.idx - b.idx);
   const LABEL_H = 14;
-  const CLOSE_IDX = 3;
+  const CLOSE_IDX = 2;
+  const anchorDir = (idx: number) => idx > projections.length * 0.7 ? 'right' : 'left';
   for (let i = 1; i < milestones.length; i++) {
     for (let j = i - 1; j >= 0; j--) {
-      if (Math.abs(milestones[i].idx - milestones[j].idx) <= CLOSE_IDX) {
+      if (Math.abs(milestones[i].idx - milestones[j].idx) <= CLOSE_IDX && anchorDir(milestones[i].idx) === anchorDir(milestones[j].idx)) {
         milestones[i].labelTop = Math.max(milestones[i].labelTop, milestones[j].labelTop + LABEL_H);
       }
     }
