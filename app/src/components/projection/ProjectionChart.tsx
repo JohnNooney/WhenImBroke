@@ -50,7 +50,6 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
   // Collect visible milestones and compute label stacking
   const milestones: Array<{ idx: number; label: string; color: string; labelTop: number }> = [];
   if (showDebtFree) milestones.push({ idx: debtFreeIdx, label: 'debt-free', color: 'var(--color-warn)', labelTop: 2 });
-  if (showTargetReached) milestones.push({ idx: targetReachedIdx, label: 'target', color: 'var(--color-ok)', labelTop: 2 });
   if (lastSafeIdx >= 0) milestones.push({ idx: lastSafeIdx, label: 'ready', color: 'var(--color-ok)', labelTop: 2 });
   if (shownDeplIdx >= 0) milestones.push({ idx: shownDeplIdx, label: 'broke', color: 'var(--color-danger)', labelTop: 2 });
   milestones.sort((a, b) => a.idx - b.idx);
@@ -92,11 +91,23 @@ export function ProjectionChart({ result, data }: ProjectionChartProps) {
           <div style={{
             position: 'absolute', left: 0, right: 0,
             bottom: `${targetLinePct}%`,
-            borderTop: '1px dashed var(--color-ok)',
-            opacity: 0.45,
+            borderTop: '1px dashed color-mix(in srgb, var(--color-ok) 45%, transparent)',
             pointerEvents: 'none',
             zIndex: 3,
-          }} />
+          }}>
+            {showTargetReached && (
+              <span style={{
+                position: 'absolute',
+                top: -16,
+                left: 4,
+                fontSize: '10px',
+                color: 'var(--color-ok)',
+                whiteSpace: 'nowrap',
+                lineHeight: 1,
+                opacity: 1,
+              }}>target</span>
+            )}
+          </div>
         )}
 
         {/* Milestone vertical lines */}
